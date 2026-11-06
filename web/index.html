@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fikrlab Mashq xonasi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: phone-first app shell — sticky header, one scrolling view, bottom tab bar; the reader is a full-screen layer */
+  --bg:#EDF1EF;
+  --surface:#FFFFFF;
+  --paper:#FAFBF9;
+  --ink:#14211D;
+  --muted:#5A6863;
+  --line:#D3DCD8;
+  --accent:#0D6B59;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#D6EBE4;
+  --good:#1D7A43;
+  --warn:#A86400;
+  --bad:#B0281F;
+  --good-soft:#DDF0E3;
+  --warn-soft:#F6E8D2;
+  --bad-soft:#F7DEDB;
+  --font-display:"Unbounded","Onest",system-ui,sans-serif;
+  --font-ui:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-read:"Literata",Georgia,"Times New Roman",serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1412; --surface:#161F1C; --paper:#131B18; --ink:#E3EBE7; --muted:#93A39D; --line:#28352F;
+    --accent:#4FC3A7; --accent-ink:#06231C; --accent-soft:#16382F;
+    --good:#62C98E; --warn:#E5A646; --bad:#F08A80; --good-soft:#163323; --warn-soft:#3A2A10; --bad-soft:#3D1A17;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1412; --surface:#161F1C; --paper:#131B18; --ink:#E3EBE7; --muted:#93A39D; --line:#28352F;
+  --accent:#4FC3A7; --accent-ink:#06231C; --accent-soft:#16382F;
+  --good:#62C98E; --warn:#E5A646; --bad:#F08A80; --good-soft:#163323; --warn-soft:#3A2A10; --bad-soft:#3D1A17;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-ui);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font:700 18px/1.2 var(--font-display);letter-spacing:-.01em}
+h2{font:600 17px/1.3 var(--font-ui)}
+h3{font:600 15px/1.3 var(--font-ui)}
+p{margin:0}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.app{max-width:620px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand small{color:var(--muted);font-size:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:600;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.chip.ok{background:var(--good-soft);border-color:transparent;color:var(--good)}
+.chip.ok .dot{background:var(--good)}
+.chip.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.chip.warn .dot{background:var(--warn)}
+.chip.bad{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.chip.bad .dot{background:var(--bad)}
+.chip.live .dot{background:var(--good);box-shadow:0 0 0 3px var(--good-soft)}
+main{flex:1;padding:16px 16px 96px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.card.accent{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .label{font-size:12px;color:var(--muted);font-weight:500}
+.tile .big{font:700 24px/1.1 var(--font-display);font-variant-numeric:tabular-nums}
+.tile .big small{font:500 13px var(--font-ui);color:var(--muted);margin-left:4px}
+.tile .sub{font-size:12px;color:var(--muted)}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--bad)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{min-height:36px;padding:7px 12px;font-size:14px;border-radius:10px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;overflow-x:auto}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:8px 10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;min-height:36px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+nav.tabs a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px 10px;font-size:11.5px;font-weight:600;color:var(--muted);text-decoration:none}
+nav.tabs a svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs a[aria-current="page"]{color:var(--accent)}
+body.focus nav.tabs, body.focus header.top{display:none}
+body.focus main{padding-bottom:24px}
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:flex-start}
+.li:first-child{border-top:0;padding-top:0}
+.li .ico{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font:700 12px var(--font-display)}
+.li .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.li .title{font-weight:600;overflow-wrap:anywhere}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-size:12px;font-weight:600;border-radius:99px;padding:2px 8px;background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.pill.good{background:var(--good-soft);color:var(--good);border-color:transparent}
+.pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.pill.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.dayhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600}
+.rules{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.rules li::marker{color:var(--accent)}
+.notice{border-radius:12px;padding:10px 12px;font-size:14px;background:var(--warn-soft);color:var(--warn)}
+.notice.info{background:var(--accent-soft);color:var(--ink)}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font:11px var(--font-ui);font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+label.opt{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+label.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+label.opt input{accent-color:var(--accent);width:18px;height:18px;flex:none}
+label.opt span{overflow-wrap:anywhere}
+input[type=range]{accent-color:var(--accent);width:100%}
+.fileup{position:relative}
+.fileup input{position:absolute;inset:0;opacity:0;cursor:pointer}
+/* reading text */
+.readtext{font-family:var(--font-read);font-size:var(--fs,19px);line-height:1.65;max-width:62ch;margin:0 auto;padding:4px 2px 40px;position:relative}
+.readtext p{margin:0 0 .8em}
+.readtext .w{border-radius:4px;transition:background-color .08s}
+.readtext .w.cur{background:var(--accent-soft);box-shadow:0 3px 0 var(--accent)}
+.readtext .w.covered{color:transparent;background:var(--line);border-radius:2px}
+.readtext.picking .w{cursor:pointer}
+.readtext.picking .w:hover{background:var(--accent-soft)}
+.readtext .w.picked{background:var(--accent);color:var(--accent-ink)}
+.readtext .w.after{opacity:.35}
+.pagecanvas{display:block;max-width:100%;margin:0 auto;border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.15)}
+/* reader layer */
+#reader{position:fixed;inset:0;z-index:20;background:var(--paper);display:flex;flex-direction:column}
+#reader[hidden]{display:none}
+.rtop{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.rtop .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.rtop .t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.rtop .t span{font-size:12px;color:var(--muted)}
+.rtools{display:flex;flex-direction:column;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.rtools .row{gap:8px;flex-wrap:nowrap}
+.rtools .ctl{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:13px;color:var(--muted)}
+.rtools .ctl b{color:var(--ink);min-width:62px}
+#rtext{flex:1;overflow-y:auto;padding:18px 18px 0;position:relative;-webkit-overflow-scrolling:touch}
+.rbottom{display:flex;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--surface)}
+.rbottom .btn{flex:1}
+#chunk{display:grid;place-items:center;min-height:55%;padding:20px;text-align:center}
+#chunk .c{font:600 clamp(26px,8vw,40px)/1.3 var(--font-read);letter-spacing:.01em}
+#chunk .p{margin-top:16px;font-size:13px;color:var(--muted)}
+.layer{position:fixed;inset:0;z-index:40;background:color-mix(in srgb,var(--ink) 45%,transparent);display:grid;place-items:center;padding:16px}
+.layer[hidden]{display:none}
+.sheet{background:var(--surface);color:var(--ink);border-radius:18px;padding:20px;max-width:440px;width:100%;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow:auto}
+.count{font:700 54px/1 var(--font-display);text-align:center;font-variant-numeric:tabular-nums;color:var(--accent)}
+#attn{position:fixed;z-index:30;padding:12px 16px;border-radius:14px;border:2px solid var(--accent);background:var(--surface);font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.2);cursor:pointer}
+#attn[hidden]{display:none}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
+#toast[hidden]{display:none}
+/* quiz */
+.qopts{display:flex;flex-direction:column;gap:8px}
+.qopts button{text-align:left;justify-content:flex-start;font-weight:500;line-height:1.35}
+.qopts button.right{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.qopts button.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.timebar{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.timebar i{display:block;height:100%;background:var(--accent);width:0}
+/* exercise stage */
+.stage{position:relative;height:220px;border-radius:var(--r);background:var(--paper);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden}
+.stage .fix{font:700 26px var(--font-display);color:var(--muted)}
+.stage .word{font:600 30px var(--font-read);letter-spacing:.02em}
+.stage .side{position:absolute;top:50%;transform:translateY(-50%);font:600 18px var(--font-read);white-space:nowrap}
+.stage .cdot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.optgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.optgrid .btn{font-family:var(--font-read);font-weight:600}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:sp 0.8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.shulte{position:relative;display:grid;gap:6px;aspect-ratio:1;max-width:420px;margin:0 auto;width:100%}
+.shulte .cell{border:1px solid var(--line);background:var(--paper);border-radius:10px;font:600 clamp(18px,5vw,26px) var(--font-display);color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums;padding:0}
+.shulte.wait .cell{color:transparent}
+.shulte .cell.done{color:var(--muted);background:var(--bg)}
+.shulte .cell.err{background:var(--bad-soft);border-color:var(--bad)}
+.shulte::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--accent);pointer-events:none}
+.klin{position:relative;border-radius:var(--r);background:var(--paper);border:1px solid var(--line);overflow:hidden;padding:6px 0}
+.klin .kr{position:relative;height:34px}
+.klin .kn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:700 12px var(--font-display);color:var(--accent)}
+.klin .ks{position:absolute;top:50%;transform:translateY(-50%);font:600 17px var(--font-read)}
+.sak .w{opacity:.2;transition:opacity .05s}
+.sak .w.fx{opacity:1;background:var(--accent-soft)}
+.tblwrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{text-align:left;padding:9px 6px;border-top:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+.tbl th{color:var(--muted);font-weight:600;border-top:0}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:var(--bg)}
+select,input[type=number],input[type=text]{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-height:44px;width:100%}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:600}
+.sizes{display:flex;gap:8px}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation-duration:2s!important} }
+@media (max-width:380px){ .grid2{grid-template-columns:1fr} .tile .big{font-size:22px} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1>Fikrlab</h1><small>Mashq xonasi · 1–2-modul</small></div>
+    <span id="todayChip" class="chip"><span class="dot"></span><span class="num">Bugun 0/20 daq</span></span>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav class="tabs" aria-label="Bo‘limlar"><div class="in">
+  <a href="#bosh" data-r="bosh"><svg viewBox="0 0 24 24"><path d="M4 19V10l8-6 8 6v9h-5v-6H9v6z"/></svg>Bosh</a>
+  <a href="#kitoblar" data-r="kitoblar"><svg viewBox="0 0 24 24"><path d="M4 5.5C6.5 4 9.5 4 12 6c2.5-2 5.5-2 8-.5V19c-2.5-1.5-5.5-1.5-8 .5-2.5-2-5.5-2-8-.5z"/><path d="M12 6v13.5"/></svg>Kitoblar</a>
+  <a href="#mashqlar" data-r="mashqlar"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Mashqlar</a>
+  <a href="#test" data-r="test"><svg viewBox="0 0 24 24"><path d="M12 13l4-4"/><path d="M4.5 18a9 9 0 1 1 15 0"/></svg>Test</a>
+  <a href="#ustoz" data-r="ustoz" id="tabUstoz" hidden><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.8-3.2 3.2-5 6-5s5.2 1.8 6 5"/><path d="M16 5.5a3 3 0 0 1 0 5.6M18 14c1.6.7 2.6 2.3 3 5"/></svg>Ustoz</a>
+  <a href="#jurnal" data-r="jurnal"><svg viewBox="0 0 24 24"><path d="M6 3h10l3 3v15H6z"/><path d="M9 9h7M9 13h7M9 17h4"/></svg>Jurnal</a>
+</div></nav>
+
+<!-- Reader layer -->
+<section id="reader" hidden aria-label="O‘qish xonasi">
+  <div class="rtop">
+    <button class="btn sm" id="rEnd">Yakunlash</button>
+    <div class="t"><b id="rTitle">Kitob</b><span id="rPage" class="num">Bet 1 / 1</span></div>
+    <span id="rChip" class="chip live"><span class="dot"></span><span class="num">00:00</span></span>
+  </div>
+  <div class="rtools">
+    <div class="seg" role="group" aria-label="O‘qish rejimi">
+      <button data-mode="normal" aria-pressed="true">Oddiy</button>
+      <button data-mode="pointer" aria-pressed="false">Ko‘rsatkich</button>
+      <button data-mode="shtorka" aria-pressed="false">Shtorka</button>
+      <button data-mode="block" aria-pressed="false">Bloklab</button>
+    </div>
+    <div class="row" id="rAuto" hidden>
+      <button class="btn sm primary" id="rPlay" style="min-width:92px">Boshlash</button>
+      <label class="ctl" for="rWpm"><b class="num" id="rWpmV">250 s/d</b><input type="range" id="rWpm" min="100" max="900" step="25" value="250"></label>
+      <div class="seg" id="rChunkSeg" role="group" aria-label="Blok hajmi" style="flex:none" hidden>
+        <button data-chunk="2" aria-pressed="false">2</button><button data-chunk="3" aria-pressed="true">3</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="seg" role="group" aria-label="Ovozni bosish mashqi" style="flex:1">
+        <button data-metro="off" aria-pressed="true">Ritm o‘chiq</button>
+        <button data-metro="ritm" aria-pressed="false">Ritm 4+2</button>
+        <button data-metro="sanoq" aria-pressed="false">Sanoq 1–20</button>
+      </div>
+      <button class="btn sm" id="rFontM" aria-label="Harfni kichraytirish">A−</button>
+      <button class="btn sm" id="rFontP" aria-label="Harfni kattalashtirish">A+</button>
+    </div>
+  </div>
+  <div id="rtext"><div id="rbody" class="readtext"></div></div>
+  <div class="rbottom">
+    <button class="btn" id="rPrev">← Oldingi bet</button>
+    <button class="btn primary" id="rNext">Keyingi bet →</button>
+  </div>
+</section>
+
+<button id="attn" hidden>Shu yerdaman ✓</button>
+<div id="layer" class="layer" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div id="toast" hidden role="status"></div>
+
+<script>
+"use strict";
+/* ============ constants & helpers ============ */
+const PDFJS_BASE = window.PDFJS_BASE || "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/";
+const GOAL_SEC = 20 * 60;      // kunlik me’yor
+const MAX_WPM = 1200;          // bundan tez varaqlangan bet hisoblanmaydi
+const MIN_WORDS = 15;          // bundan kam so‘zli bet — matnsiz bet
+const DAY = 86400000;
+
+const TG = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData ? window.Telegram.WebApp : null;
+if (TG) {
+  try { TG.ready(); TG.expand(); document.documentElement.setAttribute("data-theme", TG.colorScheme === "dark" ? "dark" : "light"); TG.onEvent("themeChanged", () => document.documentElement.setAttribute("data-theme", TG.colorScheme === "dark" ? "dark" : "light")); } catch (e) {}
+}
+async function api(method, path, body) {
+  let r;
+  try { r = await fetch(path, { method, headers: { "Content-Type": "application/json", "X-Init-Data": TG ? TG.initData : "" }, body: body ? JSON.stringify(body) : undefined }); }
+  catch (e) { throw { code: "network", message: "Internetga ulanib bo‘lmadi." }; }
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw { code: (j && j.code) || "http_" + r.status, message: j && j.error };
+  return j;
+}
+/* PDF fayllarni qurilmada saqlash (IndexedDB) */
+const PdfCache = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      try { const rq = indexedDB.open("fikrlab-pdf", 1); rq.onupgradeneeded = () => rq.result.createObjectStore("f"); rq.onsuccess = () => { this.db = rq.result; res(this.db); }; rq.onerror = () => rej(rq.error); }
+      catch (e) { rej(e); }
+    });
+  },
+  async put(id, buf) { try { const db = await this.open(); await new Promise((res, rej) => { const t = db.transaction("f", "readwrite"); t.objectStore("f").put(buf, id); t.oncomplete = res; t.onerror = () => rej(t.error); }); return true; } catch (e) { return false; } },
+  async get(id) { try { const db = await this.open(); return await new Promise((res, rej) => { const rq = db.transaction("f").objectStore("f").get(id); rq.onsuccess = () => res(rq.result || null); rq.onerror = () => rej(rq.error); }); } catch (e) { return null; } }
+};
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k === "text") e.textContent = v;
+    else if (k === "style") e.style.cssText = v;
+    else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? "" : String(v));
+  }
+  for (const k of kids.flat(Infinity)) {
+    if (k == null || k === false) continue;
+    e.append(k.nodeType ? k : document.createTextNode(String(k)));
+  }
+  return e;
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const pad = n => String(n).padStart(2, "0");
+function dayKey(ts) { const d = new Date(ts); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function clock(sec) { sec = Math.max(0, Math.round(sec)); const m = Math.floor(sec / 60), s = sec % 60; return m >= 60 ? Math.floor(m / 60) + ":" + pad(m % 60) + ":" + pad(s) : pad(m) + ":" + pad(s); }
+function mins(sec) { return Math.floor((sec || 0) / 60); }
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+const MONTHS = ["yan", "fev", "mar", "apr", "may", "iyn", "iyl", "avg", "sen", "okt", "noy", "dek"];
+function prettyDay(key) { if (typeof key !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(key)) return "—"; const [y, m, d] = key.split("-").map(Number); const t = dayKey(Date.now()), yd = dayKey(Date.now() - DAY); if (key === t) return "Bugun"; if (key === yd) return "Kecha"; return d + "-" + MONTHS[m - 1]; }
+function hm(ts) { const d = new Date(ts); return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function clean(o) { return JSON.parse(JSON.stringify(o)); }
+let toastT;
+function toast(msg, ms = 2600) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms); }
+function wordsOf(text) { return text.split(/\s+/).filter(w => /[\p{L}\d]/u.test(w)); }
+
+/* ============ built-in passages (original texts) ============ */
+const PASSAGES = [
+  { id: "asalari", title: "Asalarilar qanday yo‘l topadi", text:
+`Asalari uyasidan bir necha kilometr uzoqlikdagi gulzorga uchib boradi va adashmasdan qaytib keladi. Olimlar uzoq vaqt bu qobiliyatning sirini o‘rgangan. Ma’lum bo‘lishicha, asalari quyoshni kompas sifatida ishlatadi. Bulutli kunda ham u osmondagi qutblangan yorug‘likni sezadi va quyosh qayerdaligini aniqlay oladi.
+Yangi gulzor topgan asalari uyaga qaytgach, maxsus raqs ijro etadi. Agar ozuqa yaqin bo‘lsa, u aylana bo‘ylab yuguradi. Agar uzoq bo‘lsa, sakkiz raqamiga o‘xshash yo‘l chizadi va o‘rtadagi to‘g‘ri chiziqda tanasini tebratadi. Bu chiziqning yo‘nalishi quyoshga nisbatan gulzor tomonini ko‘rsatadi, tebranish davomiyligi esa masofani bildiradi. Boshqa asalarilar raqsni kuzatib, yo‘lga chiqadi.
+Asalarining ko‘zi ham inson ko‘zidan farq qiladi. U qizil rangni deyarli ajratmaydi, lekin biz ko‘rmaydigan ultrabinafsha nurni yaxshi ko‘radi. Ko‘plab gullarning gulbargida ultrabinafsha naqshlar bor. Ular xuddi qo‘nish yo‘lagi kabi asalarini gulning nektar joylashgan markaziga yo‘naltiradi.
+Asalari gulma-gul uchar ekan, oyoqlari va tanasidagi tukchalarga gul changi yopishadi. Keyingi gulga qo‘nganda changning bir qismi o‘sha gulga tushadi. Shu tariqa o‘simliklar changlanadi va meva tugadi. Hisob-kitoblarga ko‘ra, inson iste’mol qiladigan ekinlarning katta qismi hasharotlar, birinchi navbatda asalarilar yordamida changlanadi.
+Asalari oilasida har bir a’zoning o‘z vazifasi bor. Yosh ishchi asalarilar dastlabki kunlarda uyani tozalaydi va lichinkalarni boqadi. Keyinroq ular mum ishlab chiqarib, olti burchakli kataklar quradi. Bu shakl bejiz tanlanmagan: olti burchakli kataklar eng kam mum sarflab, eng ko‘p joy hosil qiladi va bir-biriga zich yopishadi. Faqat hayotining so‘nggi haftalarida asalari tashqariga chiqib, nektar va chang yig‘a boshlaydi.
+Yoz kunlari ishchi asalarining umri bor-yo‘g‘i besh-olti hafta davom etadi. Shu qisqa vaqt ichida u bir choy qoshig‘ining o‘n ikkidan biricha asal yig‘adi, xolos. Bir banka asal uchun minglab asalarilar butun umri davomida millionlab gullarga qo‘nib chiqishi kerak. Qishda esa asalarilar to‘p bo‘lib yig‘iladi va qanotlarini titratib, uya ichidagi haroratni saqlab turadi.
+Asalarilarning tili faqat raqsdan iborat emas. Ular hid orqali ham xabar almashadi. Xavf tug‘ilganda qo‘riqchi asalari maxsus hid chiqaradi va boshqalar darhol himoyaga otlanadi. Malika ari ham o‘z hidi bilan butun oilani birlashtirib turadi: bu hid yo‘qolsa, asalarilar bir necha soat ichida buni sezadi va yangi malika yetishtirishga kirishadi.
+So‘nggi yillarda ko‘p mamlakatlarda asalarilar soni kamaygani kuzatilmoqda. Buning sabablari orasida zaharli kimyoviy moddalar, kasalliklar va gulli yerlarning qisqarishi tilga olinadi. Shuning uchun ba’zi shaharlarda tom ustida asalari boqish va yo‘l chetlariga yovvoyi gullar ekish odat tusiga kirmoqda. Kichik bir hasharotning salomatligi butun oziq-ovqat zanjiriga ta’sir qilishini bilgan odam unga boshqacha ko‘z bilan qaray boshlaydi.` },
+  { id: "qogoz", title: "Samarqand qog‘ozi", text:
+`O‘rta asrlarda Samarqand nafaqat savdo yo‘llari chorrahasi, balki qog‘oz ishlab chiqarish markazi sifatida ham mashhur bo‘lgan. Rivoyatlarga ko‘ra, qog‘oz tayyorlash sirini bu yerga VIII asrda Xitoydan kelgan hunarmandlar olib kelgan. Ko‘p o‘tmay Samarqand ustalari bu hunarni o‘z sharoitiga moslashtirib, mustaqil maktab yaratdilar.
+Xitoyda qog‘oz asosan daraxt po‘stlog‘idan tayyorlangan bo‘lsa, Samarqandda paxta va zig‘ir tolasi, eski mato parchalari ishlatilgan. Xomashyo suvda uzoq ivitilgan, so‘ng og‘ir to‘qmoqlar bilan ezilib, bo‘tqaga aylantirilgan. Bu bo‘tqa nozik to‘r ustiga yupqa qatlam qilib yoyilgan va quritilgan. Tayyor varaq silliq tosh bilan uzoq ishqalangan. Natijada qog‘oz yaltiroq, pishiq va siyohni yaxshi ushlaydigan bo‘lgan.
+Ishlab chiqarishda suv kuchi muhim o‘rin tutgan. Shahar yaqinidagi ariqlar bo‘yida suv tegirmonlari qurilgan va ular to‘qmoqlarni harakatga keltirgan. Bu usul mehnatni yengillashtirib, qog‘ozni ko‘p miqdorda tayyorlash imkonini bergan.
+Samarqand qog‘ozi Bag‘dod, Damashq va Qohiragacha olib borilgan. U pergament va papirusga qaraganda arzon va qulay edi. Qog‘ozning keng tarqalishi kitob ko‘chirish ishini jadallashtirdi, kutubxonalar kengaydi, ilm-fan rivojiga turtki berildi. Keyinchalik qog‘oz tayyorlash san’ati Andalusiya orqali Yevropaga ham yetib bordi.
+Samarqand ustalari o‘z sirlarini avloddan avlodga og‘zaki o‘rgatgan. Shogird ustaning yonida yillar davomida ishlab, tolani qancha ivitish, bo‘tqani qanday quyuqlikda tayyorlash va varaqni qachon quyoshdan olishni ko‘z bilan o‘rgangan. Bunday bilimni kitobdan o‘qib bo‘lmas edi. Shu sababli har bir ustaxonaning qog‘ozi o‘ziga xos rang va qalinlikka ega bo‘lgan, tajribali kotiblar esa uni bir qarashda taniy olgan.
+Qog‘oz faqat kitob uchun ishlatilmagan. Undan savdo hujjatlari, xatlar, xaritalar va qarz tilxatlari yozilgan. Davlat devonlari qog‘ozdagi farmonlarni uzoq viloyatlarga tez yetkaza boshladi. Shunday qilib, bir shaharning hunari butun bir mintaqaning boshqaruvi va madaniyatiga ta’sir ko‘rsatgan.
+Vaqt o‘tishi bilan zavodlarda ishlab chiqariladigan arzon qog‘oz qo‘l mehnatini siqib chiqardi va qadimiy hunar unutila boshladi. XX asr oxirida Samarqand yaqinidagi Konigil qishlog‘ida ustalar eski usulni qayta tikladi. Bugun bu yerda sayyohlar tut daraxti po‘stlog‘idan qog‘oz tayyorlash jarayonini o‘z ko‘zi bilan ko‘rishi mumkin. Konigilga kelgan mehmonlar avval tut novdalarini qaynatish, so‘ng po‘stloqni tozalab, yog‘och to‘qmoq bilan urib yumshatishni ko‘radi. Bo‘tqa suvli hovuzga solinadi, usta uni to‘r bilan ilib oladi va taxtaga yopishtirib quritadi. Oxirida varaq tosh bilan silliqlanadi. Bir varaq tayyor bo‘lguncha bir necha kun o‘tadi. Bir varaq qog‘oz ortida qancha mehnat va bilim turganini ko‘rgan odam kitobni yanada qadrlaydi.` }
+];
+const EXTRA_WORDS = "kitob daryo o‘rtoq diqqat xotira tezlik ko‘rish tushunish mashq odat sahifa qator nigoh muallif voqea qahramon bahor tog‘ shahar maktab ustoz bog‘bon osmon yulduz deraza qalam daftar sabr bilim hikoya qissa roman ilhom manzil yo‘lchi chiroq ertak doston she’r g‘alaba qo‘shiq bulut shamol yomg‘ir quyosh bog‘cha ko‘prik maydon bozor non choynak dasturxon mehmon".split(" ");
+
+/* ============ storage ============ */
+const Store = {
+  mode: "memory", db: null, uid: null, base: null, sample: null, assets: null,
+  books: new Map(), sessions: new Map(), loaded: false, note: "", queues: new Map(),
+  homework: new Map(), students: new Map(), isTeacher: false, user: null, joinedAt: null, profileReady: false,
+  async init() {
+    if (TG) return this.initApi();
+    const c = window.claude;
+    if (c && typeof c.use === "function") {
+      try {
+        const [db, user, sample, assets] = await Promise.all([c.use("db"), c.use("user"), c.use("sample"), c.use("assets")]);
+        this.sample = sample || null; this.assets = assets || null;
+        this.user = user || null;
+        if (db && user) {
+          const id = await user.id();
+          if (id) {
+            this.db = db; this.uid = id; this.base = "students/" + id; this.mode = "db";
+            try { this.isTeacher = !!(await user.isOwner()) || !!(await user.canEdit()); } catch (e) {}
+          }
+        }
+      } catch (e) { /* stay in memory mode */ }
+    }
+    if (this.mode === "db") this.subscribe();
+    else { this.loaded = true; this.note = "Natijalar saqlanmayapti: hisobingizga kirib oching. Hozir faqat shu oynada turadi."; changed(); }
+  },
+  async initApi() {
+    this.mode = "api";
+    try {
+      const me = await api("GET", "/api/me");
+      this.uid = me.id; this.isTeacher = !!me.isTeacher; this.sample = me.quiz ? { api: true } : null;
+      await this.refresh();
+      this.profileReady = true; scheduleProfile(2000);
+      if (this.isTeacher) this.loadStudents();
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && !R.open && !ui.lock) { this.refresh().catch(() => {}); if (this.isTeacher) this.loadStudents(); } });
+    } catch (e) {
+      this.loaded = true; this.note = e.message || "Serverga ulanib bo‘lmadi. Ilovani qayta oching.";
+    }
+    changed();
+  },
+  async refresh() {
+    const st = await api("GET", "/api/state");
+    const pend = new Set(Array.from(this.queues.entries()).filter(([, q]) => q.running || q.pending).map(([k]) => k));
+    const merge = (map, kind, arr) => { const m = new Map(arr.map(d => [d.id, d])); for (const [id, v] of map) if (pend.has(kind + "/" + id)) m.set(id, v); return m; };
+    this.books = merge(this.books, "books", st.books); this.sessions = merge(this.sessions, "sessions", st.sessions);
+    this.homework = new Map(st.homework.map(d => [d.id, d])); this.joinedAt = st.joinedAt;
+    this.loaded = true; this.note = ""; changed();
+  },
+  async loadStudents() {
+    try {
+      const arr = await api("GET", "/api/students");
+      this.students = new Map(arr.map(s => [s.id, s])); arr.forEach(s => ui.names.set(s.id, s.name || "")); this.studentsAt = Date.now(); changed();
+    } catch (e) {}
+  },
+  subscribe() {
+    const timer = setTimeout(() => { if (!this.loaded) { this.note = "Ma’lumotlar hali yetib kelmadi — internetni tekshiring. Ko‘rinayotgan raqamlar eskirgan bo‘lishi mumkin."; changed(); } }, 10000);
+    this.db.collection(this.base + "/books").onSnapshot(snap => {
+      this.books = new Map(snap.docs.map(d => [d.id, Object.assign({ id: d.id }, d.data())])); changed();
+    }, err => { this.note = "Kitoblar ro‘yxatini o‘qib bo‘lmadi (" + err.code + ")."; changed(); });
+    this.db.collection(this.base + "/sessions").orderBy("start", "desc").limit(1000).onSnapshot(snap => {
+      this.sessions = new Map(snap.docs.map(d => [d.id, Object.assign({ id: d.id }, d.data())]));
+      if (!snap.metadata.fromCache) { this.loaded = true; clearTimeout(timer); if (this.note.startsWith("Ma’lumotlar hali")) this.note = ""; }
+      changed();
+    }, err => { this.loaded = true; clearTimeout(timer); this.note = "Natijalarni o‘qib bo‘lmadi (" + err.code + ")."; changed(); });
+    this.db.collection("homework").onSnapshot(snap => {
+      this.homework = new Map(snap.docs.map(d => [d.id, Object.assign({ id: d.id }, d.data())])); changed();
+    }, () => {});
+    this.db.doc(this.base).get().then(d => {
+      const dd = d.exists ? d.data() : null;
+      this.joinedAt = dd && dd.joinedAt || Date.now(); this.profileReady = true; scheduleProfile(1500);
+    }).catch(() => {});
+    if (this.isTeacher) this.db.collection("students").onSnapshot(snap => {
+      this.students = new Map(snap.docs.map(d => [d.id, Object.assign({ id: d.id }, d.data())])); changed();
+    }, () => {});
+  },
+  setDoc(path, body) {
+    if (this.mode !== "db" && this.mode !== "api") return;
+    let q = this.queues.get(path);
+    if (!q) { q = { running: false, pending: null }; this.queues.set(path, q); }
+    q.pending = clean(body);
+    if (!q.running) this.drain(path, q);
+  },
+  setHomework(id, data) {
+    this.homework.set(id, Object.assign({ id }, clean(data))); changed();
+    this.setDoc("homework/" + id, data);
+  },
+  deleteHomework(id) {
+    this.homework.delete(id); changed();
+    if (this.mode === "db") this.db.doc("homework/" + id).delete().catch(e => this.fail(e));
+    if (this.mode === "api") api("DELETE", "/api/homework/" + id).catch(e => this.fail(e));
+  },
+  write(kind, id, data) {
+    const body = clean(data); delete body.id;
+    (kind === "books" ? this.books : this.sessions).set(id, Object.assign({ id }, body));
+    if (this.mode === "api") { this.setDoc(kind + "/" + id, body); if (kind === "sessions") scheduleProfile(); return; }
+    if (this.mode !== "db") { changed(); return; }
+    this.setDoc(this.base + "/" + kind + "/" + id, body);
+    if (kind === "sessions") scheduleProfile();
+  },
+  async drain(path, q) {
+    q.running = true;
+    while (q.pending) {
+      const d = q.pending; q.pending = null;
+      if (this.mode === "api") {
+        try {
+          const r = await api("PUT", "/api/" + path, { data: d });
+          if (r && r.data && path.startsWith("sessions/")) { const id = path.slice(9); this.sessions.set(id, Object.assign({ id }, r.data)); changed(); }
+        } catch (e) {
+          if (e.code === "network" || /^http_5/.test(e.code)) { await sleep(1500 + Math.random() * 1500); if (!q.pending) q.pending = d; await sleep(3000); }
+          else this.fail(e);
+        }
+        continue;
+      }
+      const ref = this.db.doc(path);
+      try { await ref.set(d); }
+      catch (e) {
+        if (e && e.code === "unavailable") { await sleep(700 + Math.random() * 900); try { await ref.set(d); } catch (e2) { this.fail(e2); } }
+        else this.fail(e);
+      }
+    }
+    q.running = false;
+  },
+  fail(e) {
+    const c = e && e.code;
+    if (e && e.message && this.mode === "api") toast(e.message, 4500);
+    else if (c === "quota_exceeded") toast("Saqlash joyi to‘ldi — yangi natija yozilmadi.", 5000);
+    else toast("Natijani saqlab bo‘lmadi (" + (c || "xato") + "). Internetni tekshiring.", 4000);
+  },
+  sessionsArr() { return Array.from(this.sessions.values()).sort((a, b) => (b.start || 0) - (a.start || 0)); },
+  booksArr() { return Array.from(this.books.values()).sort((a, b) => (b.lastOpened || b.addedAt || 0) - (a.lastOpened || a.addedAt || 0)); }
+};
+
+/* ============ statistics ============ */
+function isVerified(s) { return !!(s.quiz && !s.quiz.skipped && s.quiz.n > 0 && s.quiz.correct >= Math.ceil(s.quiz.n * 2 / 3)); }
+let profT = null, lastProf = "";
+function scheduleProfile(ms) { clearTimeout(profT); profT = setTimeout(touchProfile, ms || 5000); }
+function touchProfile() {
+  if ((Store.mode !== "db" && Store.mode !== "api") || !Store.profileReady) return;
+  const st = computeStats(); const lt = st.tests[st.tests.length - 1];
+  const sum = { todaySec: st.today.readSec, todayDay: dayKey(Date.now()), streak: st.streak, lastWpm: lt ? lt.wpm : null, lastEff: lt && lt.effective || null, firstWpm: st.tests[0] ? st.tests[0].wpm : null, honesty: st.honesty, tot14: st.tot14, pages14: st.pages14, n: st.all.length };
+  const sig = JSON.stringify(sum) + "|" + Math.floor(Date.now() / 600000);
+  if (sig === lastProf) return; lastProf = sig;
+  if (Store.mode === "api") Store.setDoc("profile", { sum });
+  else Store.setDoc(Store.base, { joinedAt: Store.joinedAt, lastSeen: Date.now(), sum });
+}
+function computeStats(S) {
+  S = S || Store.sessionsArr();
+  const days = new Map();
+  const dayOf = k => { let d = days.get(k); if (!d) { d = { readSec: 0, verSec: 0, pages: 0, skipped: 0, regress: 0, n: 0 }; days.set(k, d); } return d; };
+  let tachiBest = null, periBest = null, palming = 0, shulte5 = null, sakBest = null;
+  for (const s of S) {
+    if (s.kind === "read") {
+      const d = dayOf(s.day); d.readSec += s.activeSec || 0; if (isVerified(s)) d.verSec += s.activeSec || 0;
+      d.pages += (s.pagesDone || []).length; d.skipped += (s.pagesSkipped || []).length; d.regress += s.regressions || 0; d.n++;
+    } else if (s.kind === "tachisto" && s.bestMs) tachiBest = tachiBest == null ? s.bestMs : Math.min(tachiBest, s.bestMs);
+    else if (s.kind === "periph" && s.bestPct) periBest = periBest == null ? s.bestPct : Math.max(periBest, s.bestPct);
+    else if (s.kind === "palming") palming++;
+    else if (s.kind === "shulte" && s.size === 5 && s.sec) shulte5 = shulte5 == null ? s.sec : Math.min(shulte5, s.sec);
+    else if (s.kind === "sakkad" && isVerified(s)) sakBest = Math.max(sakBest || 0, s.wpm || 0);
+  }
+  const today = dayKey(Date.now());
+  const met = k => (days.get(k) || {}).readSec >= GOAL_SEC;
+  let streak = 0; const cur = new Date(); if (!met(today)) cur.setDate(cur.getDate() - 1);
+  while (met(dayKey(cur.getTime()))) { streak++; cur.setDate(cur.getDate() - 1); }
+  const last14 = []; for (let i = 13; i >= 0; i--) { const t = new Date(); t.setDate(t.getDate() - i); const k = dayKey(t.getTime()); last14.push(Object.assign({ key: k, day: t.getDate() }, days.get(k) || { readSec: 0, verSec: 0, pages: 0, skipped: 0, regress: 0, n: 0 })); }
+  const tot14 = last14.reduce((a, d) => a + d.readSec, 0), ver14 = last14.reduce((a, d) => a + d.verSec, 0);
+  const pages14 = last14.reduce((a, d) => a + d.pages, 0), reg14 = last14.reduce((a, d) => a + d.regress, 0);
+  const tests = S.filter(s => s.kind === "test" && s.status === "ok").sort((a, b) => a.start - b.start);
+  return { today: days.get(today) || { readSec: 0, verSec: 0, pages: 0, skipped: 0, regress: 0, n: 0 }, streak, last14, honesty: tot14 ? Math.round(ver14 / tot14 * 100) : null, tot14, pages14, reg14, tests, tachiBest, periBest, palming, shulte5, sakBest, all: S };
+}
+
+/* ============ pdf ============ */
+let pdfjsLib = null;
+async function loadPdfjs() {
+  if (pdfjsLib) return pdfjsLib;
+  const [lib, worker] = await Promise.all([import(PDFJS_BASE + "pdf.min.mjs"), import(PDFJS_BASE + "pdf.worker.min.mjs")]);
+  globalThis.pdfjsWorker = worker; // asosiy oqimda ishlaydi (tashqi worker bloklanadi)
+  lib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + "pdf.worker.min.mjs";
+  pdfjsLib = lib; return lib;
+}
+const pdfCache = new Map(), textCache = new Map(), resolvedText = new Map();
+async function openPdfData(data) { const lib = await loadPdfjs(); return lib.getDocument({ data, useSystemFonts: true, isEvalSupported: false }).promise; }
+function buildParas(items) {
+  let raw = "";
+  for (const it of items) { if (typeof it.str !== "string") continue; raw += it.str; if (it.hasEOL) raw += "\n"; }
+  raw = raw.replace(/­/g, "").replace(/[ \t ]+/g, " ").replace(/(\p{L})-\n(\p{Ll})/gu, "$1$2");
+  const lines = raw.split("\n").map(s => s.trim()).filter(Boolean);
+  if (!lines.length) return [];
+  const avg = lines.reduce((a, l) => a + l.length, 0) / lines.length;
+  const paras = []; let cur = "", prev = "";
+  for (const l of lines) {
+    if (!cur) { cur = l; prev = l; continue; }
+    if (/[.!?…:»"”)]$/.test(prev) && prev.length < avg * 0.85) { paras.push(cur); cur = l; }
+    else cur += " " + l;
+    prev = l;
+  }
+  if (cur) paras.push(cur);
+  return paras;
+}
+async function pageText(bookId, pdf, n) {
+  const key = bookId + ":" + n;
+  if (textCache.has(key)) return textCache.get(key);
+  const p = (async () => {
+    const page = await pdf.getPage(n);
+    const tc = await page.getTextContent();
+    const paras = buildParas(tc.items);
+    const info = { paras, wordCount: wordsOf(paras.join(" ")).length };
+    resolvedText.set(key, info);
+    return info;
+  })();
+  textCache.set(key, p);
+  try { return await p; } catch (e) { textCache.delete(key); throw e; }
+}
+async function renderPageCanvas(pdf, n, width) {
+  const page = await pdf.getPage(n);
+  const base = page.getViewport({ scale: 1 });
+  const scale = Math.min(2.5, width / base.width) * (window.devicePixelRatio || 1);
+  const vp = page.getViewport({ scale });
+  const cv = document.createElement("canvas"); cv.width = Math.floor(vp.width); cv.height = Math.floor(vp.height);
+  cv.style.width = Math.floor(vp.width / (window.devicePixelRatio || 1)) + "px";
+  cv.className = "pagecanvas";
+  await page.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
+  return cv;
+}
+function bookIdFrom(pdf, file) {
+  const fp = (pdf.fingerprints && pdf.fingerprints[0]) || (file.name + "-" + file.size);
+  return "b" + String(fp).replace(/[^a-zA-Z0-9]/g, "").slice(0, 40);
+}
+
+/* local-only books need the file picked again */
+function pickFileFor(book) {
+  return new Promise((resolve, reject) => {
+    const inp = h("input", { type: "file", accept: "application/pdf,.pdf", id: "pickAgain" });
+    const sheet = openSheet([
+      h("h2", { text: "Faylni qayta tanlang" }),
+      h("p", { class: "muted", text: "“" + book.title + "” fayli bu qurilmada saqlanmagan. Telefoningizdagi o‘sha PDF faylni tanlang." }),
+      h("label", { class: "btn primary block fileup" }, "PDF tanlash", inp),
+      h("button", { class: "btn ghost", text: "Bekor qilish", onclick: () => { closeSheet(); reject(new Error("cancel")); } })
+    ]);
+    inp.addEventListener("change", async () => {
+      const f = inp.files && inp.files[0]; if (!f) return;
+      try {
+        const pdf = await openPdfData(new Uint8Array(await f.arrayBuffer()));
+        if (bookIdFrom(pdf, f) !== book.id) { toast("Bu boshqa fayl. “" + book.title + "” faylini tanlang."); return; }
+        closeSheet(); pdfCache.set(book.id, pdf); PdfCache.put(book.id, await f.arrayBuffer()); resolve(pdf);
+      } catch (e) { toast("PDF ochilmadi."); }
+    });
+  });
+}
+async function getPdf(book) {
+  if (pdfCache.has(book.id)) return pdfCache.get(book.id);
+  if (book.assetId) {
+    const r = await fetch("/_blob/" + book.assetId);
+    if (!r.ok) throw new Error("Fayl topilmadi");
+    const pdf = await openPdfData(new Uint8Array(await r.arrayBuffer()));
+    pdfCache.set(book.id, pdf); return pdf;
+  }
+  const cached = await PdfCache.get(book.id);
+  if (cached) { try { const pdf = await openPdfData(new Uint8Array(cached)); pdfCache.set(book.id, pdf); return pdf; } catch (e) {} }
+  return pickFileFor(book);
+}
+async function addBookFile(file) {
+  if (!file) return;
+  if (!/pdf$/i.test(file.type) && !/\.pdf$/i.test(file.name)) { toast("Faqat PDF fayl yuklang."); return; }
+  ui.busyMsg = "PDF ochilmoqda…"; render();
+  try {
+    const pdf = await openPdfData(new Uint8Array(await file.arrayBuffer()));
+    const id = bookIdFrom(pdf, file);
+    const old = Store.books.get(id);
+    let title = file.name.replace(/\.pdf$/i, "");
+    try { const m = await pdf.getMetadata(); const t = m && m.info && m.info.Title; if (t && String(t).trim().length > 2) title = String(t).trim(); } catch (e) {}
+    let textPages = 0; const probe = Math.min(pdf.numPages, 6);
+    for (let i = 1; i <= probe; i++) { const t = await pageText(id, pdf, i); if (t.wordCount >= MIN_WORDS) textPages++; }
+    let assetId = old && old.assetId || null;
+    if (!assetId && Store.assets) {
+      if (file.size > 20 * 1024 * 1024) toast("Fayl 20 MB dan katta — faqat shu qurilmada ochiladi.", 4000);
+      else { ui.busyMsg = "Kitob saqlanmoqda…"; render(); try { const r = await Store.assets.upload(file, { type: "application/pdf" }); assetId = r.id; } catch (e) { toast("Faylni bulutga saqlab bo‘lmadi (" + (e.code || "xato") + "). Shu qurilmada ishlaydi.", 4500); } }
+    }
+    pdfCache.set(id, pdf);
+    if (!assetId) PdfCache.put(id, await file.arrayBuffer());
+    Store.write("books", id, Object.assign({}, old || {}, {
+      title: old ? old.title : title, numPages: pdf.numPages, assetId, scanned: textPages === 0,
+      readPages: old ? old.readPages || [] : [], lastPage: old ? old.lastPage || 1 : 1,
+      addedAt: old ? old.addedAt : Date.now(), lastOpened: Date.now()
+    }));
+    toast(old ? "Bu kitob allaqachon bor — davom ettiramiz." : "Kitob qo‘shildi: " + title);
+  } catch (e) { toast("PDF ochilmadi. Fayl buzilgan yoki parolli bo‘lishi mumkin.", 4000); }
+  ui.busyMsg = ""; render();
+}
+
+/* ============ sheet / dialogs ============ */
+function openSheet(children) { const s = $("#sheet"); s.replaceChildren(...children); $("#layer").hidden = false; return s; }
+function closeSheet() { $("#layer").hidden = true; $("#sheet").replaceChildren(); }
+
+/* ============ Claude quiz ============ */
+async function makeQuestions(text, n, images) {
+  const prompt =
+`Sen tez o‘qish kursi uchun tushunish testini tuzasan. Quyida o‘quvchi hozirgina o‘qigan matn (yoki sahifa rasmlari) berilgan.
+Faqat shu matnda aniq aytilgan narsalar bo‘yicha ${n} ta savol tuz.
+Qoidalar:
+- Matnni o‘qimagan odam umumiy bilim bilan topa olmaydigan savollar bo‘lsin: voqea, ism, sabab-oqibat, raqam, asosiy fikr.
+- Savollar matn bo‘ylab tarqalgan bo‘lsin (boshi, o‘rtasi, oxiri).
+- Har bir savolda 4 ta qisqa variant, faqat bittasi to‘g‘ri. Tuzoq va ikki ma’noli savol bo‘lmasin.
+- Til: o‘zbek tili, lotin yozuvi. Agar matn boshqa tilda bo‘lsa, savollarni matn tilida yoz.
+Faqat JSON qaytar, boshqa hech narsa yozma:
+{"questions":[{"q":"savol","options":["A","B","C","D"],"answer":0}]}
+` + (text ? `\nMATN:\n"""\n${text.slice(0, 9000)}\n"""` : "\nMatn rasmlarda berilgan.");
+  if (Store.mode === "api") {
+    const imgs = [];
+    for (const b of (images || [])) imgs.push(await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(String(fr.result)); fr.readAsDataURL(b); }));
+    const r = await api("POST", "/api/quiz", { text, n, images: imgs });
+    const qs = r.questions.map(q => ({ q: q.q, options: q.options.map(t => ({ t })) }));
+    qs.quizId = r.quizId; return qs;
+  }
+  const opts = { modelTier: "quick", cache: false };
+  if (images && images.length) opts.images = images;
+  const res = await Store.sample.json(prompt, opts);
+  const raw = Array.isArray(res) ? res : (res && Array.isArray(res.questions) ? res.questions : []);
+  const qs = [];
+  for (const q of raw) {
+    if (!q || typeof q.q !== "string" || !Array.isArray(q.options) || q.options.length < 3) continue;
+    const ans = Number(q.answer); if (!(ans >= 0 && ans < q.options.length)) continue;
+    const opts2 = q.options.map((o, i) => ({ t: String(o), ok: i === ans }));
+    qs.push({ q: q.q, options: shuffle(opts2) });
+    if (qs.length >= n) break;
+  }
+  if (qs.length < Math.min(2, n)) throw { code: "bad_questions" };
+  return qs;
+}
+function quizErrText(e) {
+  const c = e && e.code;
+  if (c === "not_granted" || c === "sampling_disabled") return "Claude’ga ruxsat berilmadi, shuning uchun test tuzilmadi.";
+  if (c === "rate_limited") return "Claude hozir band yoki limit tugadi. Birozdan keyin qayta urinib ko‘ring.";
+  if (c === "bad_questions" || c === "invalid_json") return "Savollar to‘g‘ri tuzilmadi.";
+  if (c === "no_key") return "Testlar hali yoqilmagan — ustozga ayting.";
+  if (c === "network") return "Internetga ulanib bo‘lmadi.";
+  return "Savollarni tayyorlab bo‘lmadi (" + (c || "xato") + ").";
+}
+/* Runs a quiz inside container. Resolves {n, correct} or {skipped:true, reason} */
+function runQuiz(container, { text, images, n, title, allowSkip = true }) {
+  return new Promise(resolve => {
+    let qs = null, i = 0, correct = 0;
+    const done = r => resolve(r);
+    function loading() {
+      container.replaceChildren(
+        h("h2", { text: title }),
+        h("div", { class: "row" }, h("div", { class: "spin" }), h("span", { class: "muted", text: "Claude matningiz bo‘yicha savollar tuzmoqda… (matn yopiq)" }))
+      );
+    }
+    function err(e) {
+      container.replaceChildren(
+        h("h2", { text: title }),
+        h("p", { class: "notice", text: quizErrText(e) }),
+        h("button", { class: "btn primary", text: "Qayta urinish", onclick: start }),
+        allowSkip ? h("button", { class: "btn ghost", text: "Testsiz yakunlash (tasdiqlanmaydi)", onclick: () => done({ skipped: true, reason: (e && e.code) || "error" }) }) : null
+      );
+    }
+    async function start() {
+      if (!Store.sample) { done({ skipped: true, reason: "no_sample" }); return; }
+      loading();
+      try { qs = await makeQuestions(text, n, images); i = 0; correct = 0; show(); }
+      catch (e) { err(e); }
+    }
+    function show() {
+      const q = qs[i];
+      const box = h("div", { class: "qopts" });
+      let answered = false;
+      q.options.forEach((o, oi) => {
+        const b = h("button", { class: "btn", text: o.t, onclick: async () => {
+          if (answered) return; answered = true;
+          let ok = o.ok, rightIdx = q.options.findIndex(x => x.ok);
+          if (qs.quizId) {
+            b.disabled = true;
+            try { const r = await api("POST", "/api/quiz/" + qs.quizId + "/answer", { qi: i, choice: oi }); ok = r.right; rightIdx = r.rightIndex; }
+            catch (e) { toast("Javob yuborilmadi: " + (e.message || e.code)); answered = false; b.disabled = false; return; }
+            b.disabled = false;
+          }
+          if (ok) correct++;
+          b.classList.add(ok ? "right" : "wrong");
+          if (!ok) $$("button", box).forEach((bb, k) => { if (k === rightIdx) bb.classList.add("right"); });
+          setTimeout(() => { i++; if (i < qs.length) show(); else finish(); }, ok ? 550 : 1200);
+        } });
+        box.append(b);
+      });
+      container.replaceChildren(
+        h("div", { class: "row between" }, h("h2", { text: title }), h("span", { class: "pill num", text: (i + 1) + " / " + qs.length })),
+        h("p", { style: "font-size:16px;font-weight:600", text: q.q }),
+        box
+      );
+    }
+    function finish() { done(qs.quizId ? { n: qs.length, correct, quizId: qs.quizId } : { n: qs.length, correct }); }
+    start();
+  });
+}
+
+/* ============ metronome ============ */
+const Metro = {
+  ctx: null, kind: "off", timer: null, bpm: 112, beat: 0, next: 0,
+  set(kind) {
+    this.stop(); this.kind = kind;
+    if (kind === "off") return;
+    try {
+      if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.ctx.resume();
+    } catch (e) { toast("Ovoz ishlamadi."); this.kind = "off"; return; }
+    this.beat = 0; this.next = this.ctx.currentTime + 0.12;
+    this.timer = setInterval(() => this.schedule(), 25);
+  },
+  schedule() {
+    const c = this.ctx; const unit = 60 / this.bpm;
+    while (this.next < c.currentTime + 0.15) {
+      let accent, gap;
+      if (this.kind === "ritm") { const k = this.beat % 6; accent = k === 0 || k === 4; gap = k < 4 ? unit : unit * 2; }
+      else { accent = this.beat % 20 === 0; gap = unit * 1.15; }
+      this.click(this.next, accent); this.next += gap; this.beat++;
+    }
+  },
+  click(t, accent) {
+    const c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.frequency.value = accent ? 1250 : 820;
+    g.gain.setValueAtTime(accent ? 0.5 : 0.2, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + 0.06);
+  },
+  stop() { clearInterval(this.timer); this.timer = null; }
+};
+
+/* ============ reader ============ */
+const R = { open: false };
+function readerSettings() { try { return JSON.parse(localStorage.getItem("fikr-reader") || "{}"); } catch (e) { return {}; } }
+function saveReaderSettings() { try { localStorage.setItem("fikr-reader", JSON.stringify({ wpm: R.wpm, chunk: R.chunk, fs: R.fs })); } catch (e) {} }
+
+async function openBook(book, presetMode, presetMetro) {
+  let pdf;
+  try { ui.busyMsg = "Kitob ochilmoqda…"; render(); pdf = await getPdf(book); }
+  catch (e) { ui.busyMsg = ""; render(); if (e && e.message !== "cancel") toast("Kitobni ochib bo‘lmadi. Qayta yuklab ko‘ring."); return; }
+  ui.busyMsg = ""; render();
+  const st = readerSettings();
+  Object.assign(R, {
+    open: true, book, pdf, pageNum: Math.min(book.lastPage || 1, pdf.numPages), mode: "normal",
+    wpm: st.wpm || 250, chunk: st.chunk || 3, fs: st.fs || 19, playing: false, idx: 0, wordEls: [], info: null,
+    lastAct: Date.now(), paused: false, pauseReason: "", pageSec: 0, since2020: 0, sinceAttn: 0, nextAttn: 200, attn: null, attnPend: 0,
+    breakActive: false, lastSaved: 0, saved: false, token: 0, maxScroll: 0, lastRegAt: 0, autoContinue: false, coverFrom: 0, lineTop: -1,
+    session: {
+      kind: "read", bookId: book.id, bookTitle: book.title, start: Date.now(), end: Date.now(), day: dayKey(Date.now()),
+      activeSec: 0, pagesDone: [], pagesSkipped: [], wordsRead: 0, regressions: 0, backPages: 0,
+      modeSec: { normal: 0, pointer: 0, shtorka: 0, block: 0 }, metroSec: { ritm: 0, sanoq: 0 },
+      eyeBreaks: 0, eyeSkipped: 0, attnOk: 0, attnMissed: 0, quiz: null, status: "open"
+    }
+  });
+  R.sid = newId();
+  Store.write("books", book.id, Object.assign({}, book, { lastOpened: Date.now() }));
+  $("#rTitle").textContent = book.title;
+  $("#rWpm").value = R.wpm; $("#rWpmV").textContent = R.wpm + " s/d";
+  $("#rbody").style.setProperty("--fs", R.fs + "px");
+  $$("#rChunkSeg button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.chunk === R.chunk)));
+  $("#reader").hidden = false; document.body.style.overflow = "hidden";
+  setMetro(presetMetro || "off");
+  await showPage(R.pageNum);
+  setMode(presetMode || "normal");
+  clearInterval(R.tickT); R.tickT = setInterval(tick, 1000);
+  updateRChip();
+}
+function idleLimit() { const w = R.info ? R.info.wordCount : 200; return Math.min(240, Math.max(75, w / 110 * 60)); }
+function autoOn() { return R.playing && R.mode !== "normal"; }
+function tick() {
+  if (!R.open) return;
+  const now = Date.now();
+  if (R.breakActive) return;
+  if (document.visibilityState !== "visible") { if (!R.paused) pauseReading("Ilova yopildi yoki boshqa oynaga o‘tdingiz."); return; }
+  if (R.attn) {
+    R.attnPend++;
+    if (now - R.attn > 20000) { hideAttn(); R.session.attnMissed++; R.attnPend = 0; pauseReading("“Shu yerdaman” tekshiruviga javob berilmadi. Oxirgi 20 soniya hisoblanmadi."); }
+    updateRChip(); return;
+  }
+  if (R.paused) { updateRChip(); return; }
+  const active = autoOn() || (now - R.lastAct) < idleLimit() * 1000;
+  if (!active) { pauseReading("Uzoq vaqt hech qanday harakat bo‘lmadi."); return; }
+  countSecond(1);
+  if (R.since2020 >= 20 * 60) startEyeBreak();
+  else if (autoOn() && R.sinceAttn >= R.nextAttn) showAttn();
+  if (R.session.activeSec - R.lastSaved >= 60) saveSession();
+}
+function countSecond(n) {
+  const s = R.session;
+  s.activeSec += n; R.pageSec += n; R.since2020 += n; if (autoOn()) R.sinceAttn += n;
+  s.modeSec[R.mode] = (s.modeSec[R.mode] || 0) + n;
+  if (Metro.kind !== "off") s.metroSec[Metro.kind] = (s.metroSec[Metro.kind] || 0) + n;
+  s.end = Date.now();
+  updateRChip();
+}
+function updateRChip() {
+  if (!R.open) return;
+  const c = $("#rChip"); const sp = $("span.num", c);
+  sp.textContent = clock(R.session.activeSec);
+  c.className = "chip " + (R.paused || R.attn ? "warn" : "live");
+  c.title = R.paused ? "Vaqt to‘xtatilgan" : "Faol vaqt hisoblanmoqda";
+}
+function activity() { if (R.open && !R.paused) R.lastAct = Date.now(); }
+function pauseReading(reason) {
+  R.paused = true; R.pauseReason = reason; stopAuto(); updateRChip();
+  saveSession();
+  openSheet([
+    h("h2", { text: "Vaqt to‘xtatildi" }),
+    h("p", { text: reason }),
+    h("p", { class: "muted small", text: "Faqat faol o‘qilgan vaqt hisoblanadi. Hozirgacha: " + clock(R.session.activeSec) + "." }),
+    h("button", { class: "btn primary", text: "Davom etish", onclick: () => { R.paused = false; R.lastAct = Date.now(); closeSheet(); updateRChip(); } }),
+    h("button", { class: "btn ghost", text: "O‘qishni yakunlash", onclick: () => { closeSheet(); endReading(); } })
+  ]);
+}
+function showAttn() {
+  const a = $("#attn");
+  const vw = window.innerWidth, vh = window.innerHeight;
+  a.style.left = Math.round(16 + Math.random() * Math.max(0, vw - 200)) + "px";
+  a.style.top = Math.round(vh * 0.3 + Math.random() * vh * 0.4) + "px";
+  a.hidden = false; R.attn = Date.now(); R.attnPend = 0; updateRChip();
+}
+function hideAttn() { $("#attn").hidden = true; R.attn = null; }
+$("#attn").addEventListener("click", () => {
+  if (!R.attn) return;
+  const pend = R.attnPend; hideAttn(); R.session.attnOk++; R.sinceAttn = 0; R.nextAttn = 180 + Math.floor(Math.random() * 120);
+  R.lastAct = Date.now(); if (pend) countSecond(pend); R.attnPend = 0;
+});
+function startEyeBreak() {
+  R.breakActive = true; R.since2020 = 0; const wasPlaying = R.playing; stopAuto();
+  let left = 20;
+  const cnt = h("div", { class: "count num", text: "20" });
+  const finish = ok => { clearInterval(t); R.breakActive = false; if (ok) R.session.eyeBreaks++; else R.session.eyeSkipped++; R.lastAct = Date.now(); closeSheet(); if (wasPlaying) startAuto(); };
+  const t = setInterval(() => { left--; cnt.textContent = String(left); if (left <= 0) finish(true); }, 1000);
+  openSheet([
+    h("h2", { text: "20-20-20: ko‘zga dam" }),
+    h("p", { text: "20 daqiqa o‘qidingiz. Endi 20 soniya kamida 6 metr uzoqdagi narsaga erkin qarang — tikilmang." }),
+    cnt,
+    h("button", { class: "btn ghost", text: "O‘tkazib yuborish (jurnalga yoziladi)", onclick: () => finish(false) })
+  ]);
+}
+async function showPage(n) {
+  const tok = ++R.token;
+  stopAuto(); R.pageNum = n; R.idx = 0; R.pageSec = 0; R.maxScroll = 0; R.coverFrom = 0; R.lineTop = -1;
+  $("#rPage").textContent = "Bet " + n + " / " + R.pdf.numPages;
+  $("#rPrev").disabled = n <= 1; $("#rNext").disabled = false;
+  $("#rNext").textContent = n >= R.pdf.numPages ? "Kitob tugadi ✓" : "Keyingi bet →";
+  const body = $("#rbody"); body.replaceChildren(h("div", { class: "row muted" }, h("div", { class: "spin" }), "Bet tayyorlanmoqda…"));
+  $("#rtext").scrollTop = 0;
+  let info;
+  try { info = await pageText(R.book.id, R.pdf, n); } catch (e) { info = { paras: [], wordCount: 0 }; }
+  if (tok !== R.token) return;
+  R.info = info; R.wordEls = [];
+  if (info.wordCount < MIN_WORDS) {
+    body.replaceChildren(h("p", { class: "muted small", text: "Bu betda o‘qiladigan matn topilmadi (muqova, rasm yoki skanerlangan bet). Ko‘rsatkich rejimlari bu betda ishlamaydi." }));
+    try { const cv = await renderPageCanvas(R.pdf, n, Math.min(600, $("#rtext").clientWidth - 36)); if (tok === R.token) body.append(cv); } catch (e) {}
+  } else {
+    const frag = document.createDocumentFragment();
+    for (const para of info.paras) {
+      const p = document.createElement("p");
+      const ws = para.split(/\s+/).filter(Boolean);
+      ws.forEach((w, k) => { const s = document.createElement("span"); s.className = "w"; s.textContent = w; p.append(s); R.wordEls.push(s); if (k < ws.length - 1) p.append(" "); });
+      frag.append(p);
+    }
+    body.replaceChildren(frag);
+  }
+  renderModeView();
+  R.book.lastPage = n;
+  Store.write("books", R.book.id, Object.assign({}, Store.books.get(R.book.id) || R.book, { lastPage: n, lastOpened: Date.now() }));
+  if (n < R.pdf.numPages) pageText(R.book.id, R.pdf, n + 1).catch(() => {});
+  if (R.autoContinue) { R.autoContinue = false; if (R.wordEls.length) startAuto(); }
+}
+function finishPage() {
+  const p = R.pageNum, words = R.info ? R.info.wordCount : 0, s = R.session;
+  if (words >= MIN_WORDS && !s.pagesDone.includes(p)) {
+    const wpm = words / (Math.max(R.pageSec, 1) / 60);
+    if (wpm > MAX_WPM) { if (!s.pagesSkipped.includes(p)) s.pagesSkipped.push(p); toast("Bet juda tez varaqlandi — o‘qilgan deb hisoblanmadi."); }
+    else {
+      s.pagesDone.push(p); s.wordsRead += words;
+      const sk = s.pagesSkipped.indexOf(p); if (sk >= 0) s.pagesSkipped.splice(sk, 1);
+      const b = Store.books.get(R.book.id) || R.book; const rp = new Set(b.readPages || []); rp.add(p);
+      Store.write("books", R.book.id, Object.assign({}, b, { readPages: Array.from(rp).sort((a, c) => a - c) }));
+    }
+  }
+  R.pageSec = 0;
+}
+function nextPage(auto) {
+  if (R.paused) return;
+  activity(); finishPage();
+  if (R.pageNum >= R.pdf.numPages) { toast("Kitob oxiriga yetdingiz!"); saveSession(); return; }
+  R.autoContinue = !!auto; showPage(R.pageNum + 1);
+  saveSession();
+}
+function prevPage() {
+  if (R.pageNum <= 1 || R.paused) return;
+  activity(); R.session.regressions++; R.session.backPages++;
+  toast("Ortga qaytish yozildi (regressiya).");
+  R.pageSec = 0; showPage(R.pageNum - 1);
+}
+/* modes */
+function setMode(m) {
+  stopAuto(); R.mode = m;
+  $$(".rtools [data-mode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+  $("#rAuto").hidden = m === "normal";
+  $("#rChunkSeg").hidden = m !== "block";
+  R.wordEls.forEach(w => w.classList.remove("cur", "covered")); R.coverFrom = 0; R.lineTop = -1;
+  renderModeView();
+}
+function renderModeView() {
+  const old = $("#chunk"); if (old) old.remove();
+  const body = $("#rbody");
+  if (R.mode === "block" && R.wordEls.length) {
+    body.hidden = true;
+    const ch = h("div", { id: "chunk" }, h("div", null, h("div", { class: "c", text: "" }), h("div", { class: "p num", text: "" })));
+    $("#rtext").append(ch); paintChunk();
+  } else body.hidden = false;
+  if (R.mode !== "normal" && R.wordEls.length) paint();
+}
+function paintChunk() {
+  const ch = $("#chunk"); if (!ch) return;
+  const words = R.wordEls.slice(R.idx, R.idx + R.chunk).map(w => w.textContent).join(" ");
+  $(".c", ch).textContent = words || "—";
+  $(".p", ch).textContent = "So‘z " + Math.min(R.idx + R.chunk, R.wordEls.length) + " / " + R.wordEls.length + (R.playing ? "" : " · “Boshlash”ni bosing");
+}
+function paint() {
+  if (R.mode === "block") { paintChunk(); return; }
+  const prev = $(".w.cur", $("#rbody")); if (prev) prev.classList.remove("cur");
+  const w = R.wordEls[R.idx]; if (!w) return;
+  w.classList.add("cur");
+  if (R.mode === "shtorka") {
+    const top = w.offsetTop;
+    if (top !== R.lineTop) {
+      R.lineTop = top;
+      let i = R.coverFrom;
+      while (i < R.idx && R.wordEls[i].offsetTop < top) { R.wordEls[i].classList.add("covered"); i++; }
+      R.coverFrom = i;
+    }
+  }
+  const box = $("#rtext");
+  const rel = w.offsetTop - box.scrollTop;
+  if (rel > box.clientHeight * 0.62 || rel < 0) box.scrollTo({ top: Math.max(0, w.offsetTop - box.clientHeight * 0.3), behavior: "smooth" });
+}
+function startAuto() {
+  if (!R.wordEls.length) { toast("Bu betda matn yo‘q — keyingi betga o‘ting."); return; }
+  if (R.idx >= R.wordEls.length) R.idx = 0;
+  R.playing = true; R.lastAct = Date.now(); $("#rPlay").textContent = "Pauza"; paint(); schedule();
+}
+function stopAuto() { R.playing = false; clearTimeout(R.stepT); const b = $("#rPlay"); if (b) b.textContent = "Boshlash"; if (R.mode === "block") paintChunk(); }
+function schedule() {
+  clearTimeout(R.stepT); if (!R.playing) return;
+  const per = R.mode === "block" ? 60000 / R.wpm * R.chunk : 60000 / R.wpm;
+  R.stepT = setTimeout(step, per);
+}
+function step() {
+  if (!R.playing) return;
+  if (R.paused || R.attn || R.breakActive) { R.stepT = setTimeout(step, 300); return; }
+  R.idx += R.mode === "block" ? R.chunk : 1;
+  if (R.idx >= R.wordEls.length) { R.playing = false; nextPage(true); return; }
+  paint(); schedule();
+}
+/* save & end */
+function saveSession() {
+  if (!R.open && !R.session) return;
+  const s = R.session;
+  if (!R.saved && s.activeSec < 30 && !s.pagesDone.length) return;
+  R.saved = true; R.lastSaved = s.activeSec; s.end = Date.now();
+  Store.write("sessions", R.sid, s);
+}
+async function endReading() {
+  if (!R.open) return;
+  stopAuto(); clearInterval(R.tickT); hideAttn(); Metro.set("off");
+  const s = R.session; s.end = Date.now();
+  const closeReader = () => { R.open = false; $("#reader").hidden = true; $("#rtext").style.visibility = ""; document.body.style.overflow = ""; render(); };
+  if (s.activeSec < 30 && !s.pagesDone.length && !R.saved) { closeReader(); toast("Juda qisqa — jurnalga yozilmadi."); return; }
+  const eligible = s.pagesDone.length >= 1 && s.activeSec >= 120;
+  if (!eligible) {
+    s.status = "closed"; s.quiz = { skipped: true, reason: "short" }; saveSession(); closeReader();
+    toast("Saqlandi. Test uchun kamida 2 daqiqa va 1 to‘liq bet kerak.", 3500); return;
+  }
+  if (!Store.sample) {
+    s.status = "closed"; s.quiz = { skipped: true, reason: "no_sample" }; saveSession(); closeReader();
+    toast("Saqlandi. Claude ulanmagan — mashg‘ulot tasdiqlanmadi.", 3500); return;
+  }
+  $("#rtext").style.visibility = "hidden"; // test paytida matn ko‘rinmaydi
+  const sheet = openSheet([]);
+  const intro = () => sheet.replaceChildren(
+    h("h2", { text: "Tasdiqlash testi" }),
+    h("p", { text: "Bugun o‘qigan betlaringizdan 3 ta savol. 2 tasiga to‘g‘ri javob bersangiz, mashg‘ulot “tasdiqlangan” bo‘ladi." }),
+    h("p", { class: "muted small", text: "Faol vaqt: " + clock(s.activeSec) + " · o‘qilgan bet: " + s.pagesDone.length }),
+    h("button", { class: "btn primary", text: "Testni boshlash", onclick: go }),
+    h("button", { class: "btn ghost", text: "Testsiz yakunlash (tasdiqlanmaydi)", onclick: () => fin({ skipped: true, reason: "user" }) })
+  );
+  const fin = q => {
+    s.quiz = Object.assign({ at: Date.now() }, q); s.status = "closed"; saveSession(); closeSheet(); closeReader();
+    if (q.skipped) toast("Saqlandi — tasdiqlanmagan.");
+    else toast(isVerified(s) ? "Tasdiqlandi ✓ " + q.correct + "/" + q.n : "Tasdiqlanmadi: " + q.correct + "/" + q.n, 3500);
+  };
+  async function go() {
+    let text = "", images = null;
+    const pages = s.pagesDone.slice();
+    const pick = pages.length > 4 ? shuffle(pages).slice(0, 4).sort((a, b) => a - b) : pages;
+    for (const p of pick) { try { const t = await pageText(R.book.id, R.pdf, p); text += t.paras.join("\n") + "\n\n"; } catch (e) {} }
+    if (wordsOf(text).length < 40) {
+      images = [];
+      for (const p of pick.slice(0, 2)) { try { const cv = await renderPageCanvas(R.pdf, p, 900); images.push(await new Promise(r => cv.toBlob(r, "image/jpeg", 0.85))); } catch (e) {} }
+      text = "";
+    }
+    const q = await runQuiz(sheet, { text, images, n: 3, title: "Tasdiqlash testi" });
+    if (q.skipped) { fin(q); return; }
+    const ok = q.correct >= 2;
+    sheet.replaceChildren(
+      h("h2", { text: ok ? "Tasdiqlandi ✓" : "Tasdiqlanmadi" }),
+      h("div", { class: "count num", text: q.correct + "/" + q.n }),
+      h("p", { class: "muted", text: ok ? "O‘qigan vaqtingiz jurnalga tasdiqlangan holda yozildi." : "Vaqt yozildi, lekin tasdiqlanmagan. Keyingi safar sekinroq va diqqat bilan o‘qing." }),
+      h("button", { class: "btn primary", text: "Yopish", onclick: () => fin(q) })
+    );
+  }
+  intro();
+}
+/* reader wiring */
+$$(".rtools [data-mode]").forEach(b => b.addEventListener("click", () => { activity(); setMode(b.dataset.mode); }));
+$$("#rChunkSeg button").forEach(b => b.addEventListener("click", () => { R.chunk = +b.dataset.chunk; $$("#rChunkSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); saveReaderSettings(); paintChunk(); }));
+$("#rPlay").addEventListener("click", () => { activity(); if (R.playing) stopAuto(); else startAuto(); });
+$("#rWpm").addEventListener("input", e => { R.wpm = +e.target.value; $("#rWpmV").textContent = R.wpm + " s/d"; saveReaderSettings(); });
+function setMetro(k) { Metro.set(k); $$(".rtools [data-metro]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.metro === Metro.kind))); }
+$$(".rtools [data-metro]").forEach(b => b.addEventListener("click", () => { activity(); setMetro(b.dataset.metro); }));
+$("#rFontM").addEventListener("click", () => { R.fs = Math.max(15, R.fs - 1); $("#rbody").style.setProperty("--fs", R.fs + "px"); saveReaderSettings(); R.lineTop = -1; });
+$("#rFontP").addEventListener("click", () => { R.fs = Math.min(28, R.fs + 1); $("#rbody").style.setProperty("--fs", R.fs + "px"); saveReaderSettings(); R.lineTop = -1; });
+$("#rNext").addEventListener("click", () => nextPage(false));
+$("#rPrev").addEventListener("click", prevPage);
+$("#rEnd").addEventListener("click", endReading);
+["pointerdown", "keydown", "wheel", "touchstart"].forEach(ev => $("#reader").addEventListener(ev, activity, { passive: true }));
+$("#rtext").addEventListener("scroll", () => {
+  const t = $("#rtext").scrollTop; activity();
+  if (t > R.maxScroll) R.maxScroll = t;
+  else if (R.maxScroll - t > 160 && Date.now() - R.lastRegAt > 4000 && R.mode === "normal") {
+    R.session.regressions++; R.lastRegAt = Date.now(); R.maxScroll = t; toast("Yuqoriga qaytish yozildi (regressiya).");
+  }
+}, { passive: true });
+$("#rtext").addEventListener("click", () => { if (R.mode !== "normal" && R.wordEls.length) { if (R.playing) stopAuto(); else startAuto(); } });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible" && R.open) saveSession(); });
+window.addEventListener("pagehide", () => { if (R.open) saveSession(); });
+
+/* ============ views ============ */
+const ui = { route: "bosh", lock: false, busyMsg: "", test: null, names: new Map() };
+let renderQueued = false;
+function changed() { if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { renderQueued = false; updateTodayChip(); if (!ui.lock) render(); }); } }
+function updateTodayChip() {
+  const st = computeStats(); let sec = st.today.readSec;
+  const c = $("#todayChip"); $("span.num", c).textContent = "Bugun " + mins(sec) + "/20 daq";
+  c.className = "chip " + (sec >= GOAL_SEC ? "ok" : sec > 0 ? "warn" : "");
+}
+function setRoute() {
+  const r = (location.hash || "#bosh").slice(1);
+  ui.route = ["bosh", "kitoblar", "mashqlar", "test", "jurnal", "ustoz"].includes(r) ? r : "bosh";
+  if (!ui.lock) render();
+}
+window.addEventListener("hashchange", setRoute);
+function go(r) { if (location.hash !== "#" + r) location.hash = r; else setRoute(); }
+function render() {
+  $$("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.dataset.r === ui.route ? "page" : "false"));
+  const v = $("#view");
+  $("#tabUstoz").hidden = !Store.isTeacher;
+  const views = { bosh: viewHome, kitoblar: viewBooks, mashqlar: viewEx, test: viewTest, jurnal: viewLog, ustoz: viewTeacher };
+  const parts = [];
+  if (Store.note) parts.push(h("p", { class: "notice", text: Store.note }));
+  if (ui.busyMsg) parts.push(h("div", { class: "card row" }, h("div", { class: "spin" }), h("span", { text: ui.busyMsg })));
+  parts.push(...[].concat(views[ui.route]()));
+  v.replaceChildren(...parts);
+}
+
+/* ---- home ---- */
+function barChart(days) {
+  const W = 340, H = 150, L = 26, B = 22, T = 8;
+  const maxMin = Math.max(30, ...days.map(d => Math.ceil(d.readSec / 60)));
+  const y = m => T + (H - T - B) * (1 - m / maxMin);
+  const bw = (W - L - 4) / days.length;
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="So‘nggi 14 kunlik o‘qish daqiqalari">`;
+  [0, 20, maxMin].forEach(v => { s += `<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" ${v === 20 ? 'stroke="var(--muted)" stroke-dasharray="4 3"' : 'stroke="var(--line)"'}/><text x="${L - 4}" y="${y(v) + 4}" text-anchor="end">${v}</text>`; });
+  days.forEach((d, i) => {
+    const x = L + 2 + i * bw, tot = d.readSec / 60, ver = d.verSec / 60;
+    if (tot > 0) {
+      s += `<rect x="${x + 2}" y="${y(tot)}" width="${bw - 4}" height="${y(0) - y(tot)}" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1"/>`;
+      if (ver > 0) s += `<rect x="${x + 2}" y="${y(ver)}" width="${bw - 4}" height="${y(0) - y(ver)}" rx="3" fill="var(--accent)"/>`;
+    }
+    s += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${d.day}</text>`;
+  });
+  return s + "</svg>";
+}
+function lineChart(tests) {
+  const W = 340, H = 160, L = 34, B = 22, T = 12, Rr = 10;
+  const vals = tests.flatMap(t => [t.wpm, t.effective || 0]);
+  const maxV = Math.max(100, Math.ceil(Math.max(...vals) / 50) * 50);
+  const x = i => tests.length === 1 ? (L + W - Rr) / 2 : L + (W - L - Rr) * i / (tests.length - 1);
+  const y = v => T + (H - T - B) * (1 - v / maxV);
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Diagnostika natijalari">`;
+  [0, maxV / 2, maxV].forEach(v => { s += `<line x1="${L}" x2="${W - Rr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 5}" y="${y(v) + 4}" text-anchor="end">${Math.round(v)}</text>`; });
+  const path = k => { let d = "", pen = false; tests.forEach((t, i) => { const v = t[k]; if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1) + " "; pen = true; }); return d.trim(); };
+  const area = path("wpm") + ` L${x(tests.length - 1).toFixed(1)} ${y(0)} L${x(0).toFixed(1)} ${y(0)} Z`;
+  if (tests.length > 1) s += `<path d="${area}" fill="var(--accent)" opacity=".1"/>`;
+  s += `<path d="${path("wpm")}" fill="none" stroke="var(--accent)" stroke-width="2.5"/>`;
+  if (tests.some(t => t.effective)) s += `<path d="${path("effective")}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+  tests.forEach((t, i) => { s += `<circle cx="${x(i)}" cy="${y(t.wpm)}" r="${i === tests.length - 1 ? 5 : 3}" fill="var(--accent)"/>`; });
+  const lt = tests[tests.length - 1];
+  s += `<text x="${Math.min(x(tests.length - 1), W - Rr - 4)}" y="${Math.max(T + 10, y(lt.wpm) - 9)}" text-anchor="end" style="fill:var(--ink);font-weight:600">${lt.wpm}</text>`;
+  s += `<text x="${x(0)}" y="${H - 6}" text-anchor="start">1-test</text><text x="${W - Rr}" y="${H - 6}" text-anchor="end">${tests.length}-test</text>`;
+  return s + "</svg>";
+}
+function svgEl(str) { const d = document.createElement("div"); d.innerHTML = str; return d.firstChild; }
+function growthPct(a, b) { return a ? Math.round((b - a) / a * 100) : 0; }
+
+function viewHome() {
+  const st = computeStats();
+  const out = [];
+  const t = st.today, pct = Math.min(100, Math.round(t.readSec / GOAL_SEC * 100));
+  const lastTest = st.tests[st.tests.length - 1], firstTest = st.tests[0];
+  const books = Store.booksArr();
+  // today card
+  out.push(h("section", { class: "card accent" },
+    h("div", { class: "row between" }, h("h2", { text: "Bugungi me’yor" }), h("span", { class: "pill " + (t.readSec >= GOAL_SEC ? "good" : t.readSec ? "warn" : ""), text: t.readSec >= GOAL_SEC ? "Bajarildi" : "20 daqiqa faol o‘qish" })),
+    h("div", { class: "row between" }, h("div", { class: "num", style: "font:700 32px var(--font-display)" }, mins(t.readSec), h("small", { class: "muted", style: "font:500 15px var(--font-ui)", text: " / 20 daq" })), h("span", { class: "muted small num", text: t.pages + " bet · " + t.regress + " regressiya" })),
+    h("div", { class: "bar" }, h("i", { style: "width:" + pct + "%" })),
+    books.length
+      ? h("button", { class: "btn primary block", text: "O‘qishni davom ettirish: " + books[0].title, onclick: () => openBook(books[0]) })
+      : h("button", { class: "btn primary block", text: "Birinchi PDF kitobni yuklash", onclick: () => go("kitoblar") })
+  ));
+  const hwc = hwCard(Store.sessionsArr(), "Ustoz vazifalari");
+  if (hwc) out.push(hwc);
+  // tiles
+  out.push(h("section", { class: "grid2" },
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Seriya" }), h("span", { class: "big" }, String(st.streak), h("small", { text: "kun" })), h("span", { class: "sub", text: "20 daqiqadan kam bo‘lmagan kunlar" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Tezlik (oxirgi test)" }), h("span", { class: "big" }, lastTest ? String(lastTest.wpm) : "—", h("small", { text: "s/d" })),
+      h("span", { class: "sub", text: lastTest ? (st.tests.length > 1 ? (growthPct(firstTest.wpm, lastTest.wpm) >= 0 ? "+" : "") + growthPct(firstTest.wpm, lastTest.wpm) + "% 1-testdan" : "Boshlang‘ich nuqta") : "Diagnostikadan o‘ting" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Samarali tezlik" }), h("span", { class: "big" }, lastTest && lastTest.effective ? String(lastTest.effective) : "—", h("small", { text: "s/d" })), h("span", { class: "sub", text: lastTest && lastTest.comprehension != null ? "Tezlik × tushunish (" + Math.round(lastTest.comprehension * 100) + "%)" : "Tezlik × tushunish" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Halollik (14 kun)" }), h("span", { class: "big" }, st.honesty == null ? "—" : st.honesty + "%"), h("span", { class: "sub", text: "Testda tasdiqlangan o‘qish vaqti ulushi" }))
+  ));
+  // 14-day chart
+  out.push(h("section", { class: "card" },
+    h("div", { class: "row between" }, h("h2", { text: "So‘nggi 14 kun" }), h("span", { class: "muted small num", text: mins(st.tot14) + " daq · " + st.pages14 + " bet" })),
+    svgEl(barChart(st.last14)),
+    h("div", { class: "legend" }, h("span", null, h("i", { style: "background:var(--accent)" }), "Tasdiqlangan"), h("span", null, h("i", { style: "background:var(--accent-soft);border:1px solid var(--accent)" }), "Tasdiqlanmagan"), h("span", null, h("i", { style: "background:transparent;border-top:2px dashed var(--muted);border-radius:0;height:0" }), "20 daq me’yor"))
+  ));
+  // tests chart
+  out.push(h("section", { class: "card" },
+    h("div", { class: "row between" }, h("h2", { text: "Diagnostika dinamikasi" }), h("button", { class: "btn sm", text: "Test topshirish", onclick: () => go("test") })),
+    st.tests.length ? svgEl(lineChart(st.tests)) : h("p", { class: "empty", text: "Hali test yo‘q. Birinchi diagnostika — boshlang‘ich raqamingiz bo‘ladi." }),
+    st.tests.length ? h("div", { class: "legend" }, h("span", null, h("i", { style: "background:var(--accent)" }), "So‘z/daqiqa"), h("span", null, h("i", { style: "background:transparent;border-top:2px dashed var(--ink);border-radius:0;height:0" }), "Samarali tezlik")) : null
+  ));
+  // exercise bests
+  out.push(h("section", { class: "grid2" },
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Taxistoskop (eng yaxshi)" }), h("span", { class: "big" }, st.tachiBest ? String(st.tachiBest) : "—", h("small", { text: "ms" })), h("span", { class: "sub", text: "So‘zni ko‘rish uchun yetgan vaqt" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Ko‘rish maydoni" }), h("span", { class: "big" }, st.periBest ? String(st.periBest) : "—", h("small", { text: "%" })), h("span", { class: "sub", text: "Nuqtadan qancha kenglikni ko‘ra oldingiz" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Shulte 5×5 (eng tez)" }), h("span", { class: "big" }, st.shulte5 ? String(st.shulte5) : "—", h("small", { text: "s" })), h("span", { class: "sub", text: "25 raqamni tartib bilan topish" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Sakkad (tasdiqlangan)" }), h("span", { class: "big" }, st.sakBest ? String(st.sakBest) : "—", h("small", { text: "s/d" })), h("span", { class: "sub", text: "Qatorga 3 nigoh bilan o‘qish" }))
+  ));
+  // rules
+  out.push(h("section", { class: "card" },
+    h("h2", { text: "Hisob qoidalari" }),
+    h("ul", { class: "rules" },
+      h("li", { text: "Vaqt faqat o‘qish xonasi ochiq va siz faol bo‘lganingizda yoziladi. Harakat bo‘lmasa 1–4 daqiqadan keyin to‘xtaydi." }),
+      h("li", { text: "Bet so‘zlariga yetarli vaqt o‘tgandagina o‘qilgan hisoblanadi: daqiqasiga " + MAX_WPM + " so‘zdan tez varaqlangan bet sanalmaydi." }),
+      h("li", { text: "Oldingi betga qaytish va yuqoriga aylantirish regressiya bo‘lib yoziladi." }),
+      h("li", { text: "Avtomatik rejimlarda 3–5 daqiqada “Shu yerdaman” tugmasi chiqadi. 20 soniyada bosilmasa, vaqt to‘xtaydi." }),
+      h("li", { text: "O‘qish oxirida 3 ta savol: 2 tasi to‘g‘ri bo‘lsa, mashg‘ulot tasdiqlanadi." }),
+      h("li", { text: "Yozuvlarni tahrirlash yoki o‘chirish tugmasi yo‘q." })
+    ),
+    h("p", { class: "muted small", text: Store.mode === "db" || Store.mode === "api" ? "Natijalar hisobingizda saqlanadi va istalgan qurilmada ko‘rinadi." + (Store.mode === "api" ? " Test javoblari serverda tekshiriladi." : "") : "Natijalar hozircha saqlanmayapti." })
+  ));
+  return out;
+}
+
+/* ---- books ---- */
+function viewBooks() {
+  const out = [];
+  const inp = h("input", { type: "file", accept: "application/pdf,.pdf", id: "bookFile", onchange: e => { const f = e.target.files[0]; e.target.value = ""; addBookFile(f); } });
+  out.push(h("section", { class: "card" },
+    h("h2", { text: "Kitob yuklash" }),
+    h("p", { class: "muted small", text: "PDF kitob tanlang. Kurs tavsiyasi: o‘zbek yozuvchisining sodda tilli hikoya, qissa yoki romani, shrifti mayda bo‘lmagan." }),
+    h("label", { class: "btn primary block fileup", for: "bookFile" }, "PDF tanlash", inp),
+    Store.assets ? null : h("p", { class: "notice info small", text: "Kitob shu qurilmada saqlanadi. Boshqa telefonda ochsangiz, faylni bir marta qayta tanlaysiz. Statistika hamma joyda bir xil." })
+  ));
+  const books = Store.booksArr();
+  const list = h("div", { class: "list" });
+  if (!books.length) list.append(h("p", { class: "empty", text: "Hali kitob yo‘q. Yuqoridan birinchisini yuklang." }));
+  for (const b of books) {
+    const read = (b.readPages || []).length, pct = b.numPages ? Math.round(read / b.numPages * 100) : 0;
+    const secs = Store.sessionsArr().filter(s => s.kind === "read" && s.bookId === b.id).reduce((a, s) => a + (s.activeSec || 0), 0);
+    list.append(h("div", { class: "li" },
+      h("div", { class: "ico", text: "PDF" }),
+      h("div", { class: "body" },
+        h("span", { class: "title", text: b.title }),
+        h("span", { class: "muted small num", text: read + " / " + b.numPages + " bet o‘qilgan · " + mins(secs) + " daq · " + (b.lastPage || 1) + "-betda to‘xtagansiz" }),
+        h("div", { class: "bar" }, h("i", { style: "width:" + pct + "%" })),
+        h("div", { class: "pills" }, b.assetId ? h("span", { class: "pill good", text: "Bulutda" }) : h("span", { class: "pill", text: "Faqat shu qurilmada" }), b.scanned ? h("span", { class: "pill warn", text: "Skanerlangan: matn ajratilmadi" }) : null),
+        h("div", { class: "row" }, h("button", { class: "btn sm primary", text: "O‘qish", onclick: () => openBook(b) }))
+      )
+    ));
+  }
+  out.push(h("section", { class: "card" }, h("h2", { text: "Mening kitoblarim" }), list));
+  return out;
+}
+
+/* ---- exercises ---- */
+function viewEx() {
+  if (ui.ex) return ui.ex.render();
+  const books = Store.booksArr();
+  const needBook = (mode, metro) => () => { if (!books.length) { toast("Avval kitob yuklang."); go("kitoblar"); return; } chooseBook(b => openBook(b, mode, metro)); };
+  const card = (tag, title, desc, btn, fn, from) => h("div", { class: "li" },
+    h("div", { class: "ico", text: tag }),
+    h("div", { class: "body" }, h("span", { class: "title", text: title }), h("span", { class: "muted small", text: desc }), from ? h("span", { class: "pill", text: from }) : null,
+      h("div", { class: "row" }, h("button", { class: "btn sm", text: btn, onclick: fn })))
+  );
+  return [
+    h("section", { class: "card" },
+      h("h2", { text: "Kitob ustida mashqlar" }),
+      h("p", { class: "muted small", text: "Bular o‘qish xonasida bajariladi. Har bir rejimda o‘tgan daqiqa jurnalga alohida yoziladi." }),
+      h("div", { class: "list" },
+        card("Ko", "Ko‘rsatkich", "Belgi matn bo‘ylab faqat oldinga yuradi, ko‘z unga ergashadi. Tezlikni o‘zingiz qo‘yasiz.", "Boshlash", needBook("pointer"), "2-dars · regressiya"),
+        card("Sh", "Shtorka", "O‘qilgan qatorlar yopilib boradi — ortga qaytishning iloji yo‘q.", "Boshlash", needBook("shtorka"), "2-dars · regressiya"),
+        card("4+2", "Ritm bilan o‘qish", "Metronom 4+2 ritmini chaladi, siz qalam bilan stolga urib, matnni o‘qiysiz.", "Boshlash", needBook("normal", "ritm"), "3-dars · ichki ovoz"),
+        card("20", "Sanoq bilan o‘qish", "Har zarbada ichingizda 1 dan 20 gacha sanaysiz, ko‘z esa matnni o‘qiydi.", "Boshlash", needBook("normal", "sanoq"), "3-dars · ichki ovoz"),
+        card("Bl", "Bloklab o‘qish", "Matn 2–3 so‘zli bo‘laklarda chiqadi — bir nigohda bir guruh.", "Boshlash", needBook("block"), "1-dars · asosiy texnika")
+      )
+    ),
+    h("section", { class: "card" },
+      h("h2", { text: "Ko‘z mashqlari" }),
+      h("div", { class: "list" },
+        card("T", "Taxistoskop", "So‘z bir lahzaga chiqib yo‘qoladi. To‘g‘ri topsangiz, vaqt qisqaradi. 20 urinish.", "Boshlash", () => startTachisto(), "1-dars · tarix"),
+        card("◦", "Periferik ko‘rish", "O‘rtadagi nuqtaga qarang, ikki chetdagi so‘zni birga ko‘ring. To‘g‘ri bo‘lsa, so‘zlar uzoqlashadi.", "Boshlash", () => startPeriph(), "1-dars · “Qizil · Sariq”"),
+        card("K", "Kaft bilan dam", "90 soniya: kaftlarni isitib, ko‘zni bosmasdan yoping. Kuniga 2–3 marta.", "Boshlash", () => startPalming(), "5-dars · ko‘z salomatligi")
+      )
+    ),
+    h("section", { class: "card" },
+      h("h2", { text: "2-modul: ko‘rish maydoni va ko‘z harakati" }),
+      h("div", { class: "list" },
+        h("div", { class: "li" }, h("div", { class: "ico", text: "Sh" }), h("div", { class: "body" },
+          h("span", { class: "title", text: "Shulte jadvali" }),
+          h("span", { class: "muted small", text: "Ko‘z markazdagi nuqtada turadi, raqamlarni 1 dan boshlab tartib bilan bosasiz. Vaqt va xatolar yoziladi." }),
+          h("span", { class: "pill", text: "Periferik ko‘rish" }),
+          h("div", { class: "sizes" }, [3, 4, 5].map(n => h("button", { class: "btn sm", text: n + "×" + n, onclick: () => startShulte(n) }))))),
+        card("Kl", "Klinovid jadval", "Ko‘z o‘rtadagi raqamlar bo‘ylab pastga tushadi, chetdagi bo‘g‘inlar tobora uzoqlashadi. Oxirida 3 ta tekshiruv.", "Boshlash", () => startKlin(), "Ko‘rish maydoni"),
+        card("Sk", "Sakkad mashqi", "Har qatorda ko‘z faqat 3 joyda to‘xtaydi. Tezlikni siz qo‘yasiz, oxirida Claude 3 ta savol beradi.", "Matn tanlash", () => chooseSource(startSakkad), "Fiksatsiya va sakkad")
+      )
+    )
+  ];
+}
+function chooseBook(cb) {
+  const books = Store.booksArr();
+  if (books.length === 1) { cb(books[0]); return; }
+  openSheet([
+    h("h2", { text: "Qaysi kitob?" }),
+    ...books.map(b => h("button", { class: "btn block", style: "justify-content:flex-start;text-align:left", text: b.title, onclick: () => { closeSheet(); cb(b); } })),
+    h("button", { class: "btn ghost", text: "Bekor qilish", onclick: closeSheet })
+  ]);
+}
+function wordPool() {
+  const set = new Set(EXTRA_WORDS);
+  for (const p of PASSAGES) wordsOf(p.text).forEach(w => set.add(w));
+  for (const [, v] of resolvedText) wordsOf(v.paras.join(" ")).forEach(w => set.add(w));
+  return Array.from(set).map(w => w.replace(/^[^\p{L}]+|[^\p{L}‘’']+$/gu, "").toLowerCase()).filter(w => w.length >= 4 && w.length <= 12 && /^[\p{L}‘’'-]+$/u.test(w));
+}
+function lockUI(on) { ui.lock = on; document.body.classList.toggle("focus", on); if (!on) render(); }
+function exitEx() { ui.ex = null; lockUI(false); }
+function flash(el, ms) {
+  return new Promise(res => {
+    el.style.visibility = "visible";
+    let t0 = null;
+    const f = t => { if (t0 == null) t0 = t; if (t - t0 >= ms - 6) { el.style.visibility = "hidden"; res(); } else requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+  });
+}
+function startTachisto() {
+  const pool = Array.from(new Set(wordPool()));
+  const TRIALS = 20; let trial = 0, T = 300, correct = 0, best = null; const startAt = Date.now();
+  const v = $("#view");
+  lockUI(true);
+  const stage = h("div", { class: "stage" });
+  const info = h("div", { class: "row between" }, h("h2", { text: "Taxistoskop" }), h("span", { class: "pill num", text: "" }));
+  const opts = h("div", { class: "optgrid" });
+  const note = h("p", { class: "muted small", text: "Markazdagi + belgisiga qarang. So‘z juda qisqa chiqadi." });
+  const quit = h("button", { class: "btn ghost", text: "To‘xtatish (yozilmaydi)", onclick: exitEx });
+  v.replaceChildren(h("section", { class: "card" }, info, stage, opts, note, quit));
+  ui.ex = { render: () => [] };
+  async function next() {
+    if (trial >= TRIALS) return done();
+    trial++;
+    $(".pill", info).textContent = trial + " / " + TRIALS + " · " + T + " ms";
+    const phrase = trial > 12;
+    const pick = () => pool[Math.floor(Math.random() * pool.length)];
+    const target = phrase ? pick() + " " + pick() : pick();
+    opts.replaceChildren();
+    const fix = h("div", { class: "fix", text: "+" }); stage.replaceChildren(fix);
+    await sleep(700);
+    const w = h("div", { class: "word", text: target, style: "visibility:hidden" });
+    stage.replaceChildren(w);
+    await flash(w, T);
+    stage.replaceChildren(h("div", { class: "fix", text: "#########" }));
+    const len = target.length;
+    const near = shuffle(pool.filter(p => Math.abs(p.length - (phrase ? len / 2 : len)) <= 2 && !target.includes(p)));
+    const distract = [];
+    while (distract.length < 3) {
+      const d = phrase ? (Math.random() < .5 ? target.split(" ")[0] + " " + (near.pop() || pick()) : (near.pop() || pick()) + " " + target.split(" ")[1]) : (near.pop() || pick());
+      if (d !== target && !distract.includes(d)) distract.push(d);
+    }
+    const all = shuffle([target, ...distract]);
+    let answered = false;
+    all.forEach(o => opts.append(h("button", { class: "btn", text: o, onclick: () => {
+      if (answered) return; answered = true;
+      if (o === target) { correct++; best = best == null ? T : Math.min(best, T); T = Math.max(30, Math.round(T * 0.85)); toast("To‘g‘ri ✓", 700); }
+      else { T = Math.min(900, Math.round(T * 1.2)); toast("Bu edi: " + target, 1200); }
+      next();
+    } })));
+  }
+  function done() {
+    const rec = { kind: "tachisto", start: startAt, end: Date.now(), day: dayKey(startAt), trials: TRIALS, correct, bestMs: best, finalMs: T };
+    Store.write("sessions", newId(), rec);
+    v.replaceChildren(h("section", { class: "card" },
+      h("h2", { text: "Taxistoskop natijasi" }),
+      h("div", { class: "grid2" },
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Eng qisqa to‘g‘ri" }), h("span", { class: "big" }, best ? String(best) : "—", h("small", { text: "ms" }))),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Aniqlik" }), h("span", { class: "big" }, Math.round(correct / TRIALS * 100) + "%"))),
+      h("p", { class: "muted small", text: "Natija jurnalga yozildi. Ertaga shu vaqtdan boshlab, yana qisqartirishga harakat qiling." }),
+      h("button", { class: "btn primary", text: "Yana bir marta", onclick: startTachisto }),
+      h("button", { class: "btn ghost", text: "Mashqlarga qaytish", onclick: exitEx })
+    ));
+  }
+  next();
+}
+function startPeriph() {
+  const pool = Array.from(new Set(wordPool().filter(w => w.length <= 8)));
+  const TRIALS = 15; let trial = 0, d = 4, correct = 0, best = null; const startAt = Date.now();
+  const v = $("#view"); lockUI(true); ui.ex = { render: () => [] };
+  const stage = h("div", { class: "stage" });
+  const info = h("div", { class: "row between" }, h("h2", { text: "Periferik ko‘rish" }), h("span", { class: "pill num", text: "" }));
+  const opts = h("div", { class: "qopts" });
+  v.replaceChildren(h("section", { class: "card" }, info, stage, opts,
+    h("p", { class: "muted small", text: "Faqat o‘rtadagi nuqtaga qarang. So‘zlar 150 ms chiqadi — ko‘zni burishga ulgurmaysiz, shuning uchun bu chin periferik ko‘rish." }),
+    h("button", { class: "btn ghost", text: "To‘xtatish (yozilmaydi)", onclick: exitEx })));
+  const pick = () => pool[Math.floor(Math.random() * pool.length)];
+  async function next() {
+    if (trial >= TRIALS) return done();
+    trial++; $(".pill", info).textContent = trial + " / " + TRIALS + " · kenglik " + (d * 2) + "%";
+    opts.replaceChildren();
+    const a = pick(); let b = pick(); while (b === a) b = pick();
+    const dot = h("div", { class: "cdot" });
+    stage.replaceChildren(dot);
+    await sleep(900);
+    const L = h("div", { class: "side", text: a.toUpperCase(), style: "right:" + (50 + d) + "%;visibility:hidden" });
+    const Rr = h("div", { class: "side", text: b.toUpperCase(), style: "left:" + (50 + d) + "%;visibility:hidden" });
+    stage.append(L, Rr);
+    L.style.visibility = "visible"; await flash(Rr, 150); L.style.visibility = "hidden";
+    const right = a + " · " + b;
+    const ds = new Set([right]);
+    while (ds.size < 4) { const r = Math.random(); ds.add(r < .4 ? a + " · " + pick() : r < .8 ? pick() + " · " + b : pick() + " · " + pick()); }
+    let answered = false;
+    shuffle(Array.from(ds)).forEach(o => opts.append(h("button", { class: "btn", style: "font-family:var(--font-read)", text: o.toUpperCase(), onclick: () => {
+      if (answered) return; answered = true;
+      if (o === right) { correct++; best = Math.max(best || 0, d * 2); d = Math.min(36, d + 4); toast("To‘g‘ri ✓", 700); }
+      else { d = Math.max(2, d - 4); toast("Bu edi: " + right.toUpperCase(), 1300); }
+      next();
+    } })));
+  }
+  function done() {
+    Store.write("sessions", newId(), { kind: "periph", start: startAt, end: Date.now(), day: dayKey(startAt), trials: TRIALS, correct, bestPct: best });
+    v.replaceChildren(h("section", { class: "card" },
+      h("h2", { text: "Periferik ko‘rish natijasi" }),
+      h("div", { class: "grid2" },
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Eng keng to‘g‘ri" }), h("span", { class: "big" }, best ? String(best) : "—", h("small", { text: "%" }))),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Aniqlik" }), h("span", { class: "big" }, Math.round(correct / TRIALS * 100) + "%"))),
+      h("p", { class: "muted small", text: "Kenglik — ikki so‘z orasidagi masofa, ekran kengligiga nisbatan." }),
+      h("button", { class: "btn primary", text: "Yana bir marta", onclick: startPeriph }),
+      h("button", { class: "btn ghost", text: "Mashqlarga qaytish", onclick: exitEx })));
+  }
+  next();
+}
+function startPalming() {
+  const v = $("#view"); lockUI(true); ui.ex = { render: () => [] };
+  let left = 90; const startAt = Date.now();
+  const cnt = h("div", { class: "count num", text: "1:30" });
+  const t = setInterval(() => {
+    if (document.visibilityState !== "visible") { clearInterval(t); toast("Ilovadan chiqdingiz — mashq yozilmadi."); exitEx(); return; }
+    left--; cnt.textContent = Math.floor(left / 60) + ":" + pad(left % 60);
+    if (left <= 0) { clearInterval(t); Store.write("sessions", newId(), { kind: "palming", start: startAt, end: Date.now(), day: dayKey(startAt), sec: 90 }); toast("Kaft bilan dam yozildi ✓"); exitEx(); }
+  }, 1000);
+  v.replaceChildren(h("section", { class: "card" },
+    h("h2", { text: "Kaft bilan dam" }),
+    h("ol", { class: "steps" }, h("li", { text: "Kaftlarni bir-biriga ishqalab isiting." }), h("li", { text: "Ko‘z ustiga qo‘ying: qorong‘i bo‘lsin, lekin bosmang." }), h("li", { text: "Erkin nafas oling. Dastlab nur ko‘rinsa — bu normal." })),
+    cnt,
+    h("p", { class: "muted small", text: "Telefon ochiq tursin. Ilovadan chiqsangiz, mashq yozilmaydi." }),
+    h("button", { class: "btn ghost", text: "To‘xtatish", onclick: () => { clearInterval(t); exitEx(); } })));
+}
+
+/* ---- diagnostic test ---- */
+function viewTest() {
+  const st = computeStats();
+  const books = Store.booksArr().filter(b => !b.scanned);
+  const src = ui.testSrc || "p:" + PASSAGES[0].id;
+  const opt = (val, label, sub) => h("label", { class: "opt" }, h("input", { type: "radio", name: "src", value: val, checked: val === src ? true : null, onchange: () => { ui.testSrc = val; } }), h("span", null, h("b", { text: label }), sub ? h("span", { class: "muted small", text: " · " + sub }) : null));
+  const usedPassages = new Set(st.all.filter(s => s.kind === "test" && s.source === "passage").map(s => s.sourceId));
+  const ptr = h("input", { type: "checkbox", id: "ptr", checked: ui.testPtr ? true : null, onchange: e => ui.testPtr = e.target.checked });
+  const hist = h("div", { class: "list" });
+  const tests = st.all.filter(s => s.kind === "test");
+  if (!tests.length) hist.append(h("p", { class: "empty", text: "Hali test topshirilmagan." }));
+  const okTests = st.tests;
+  tests.slice(0, 20).forEach(t => {
+    const i = okTests.indexOf(t), prev = i > 0 ? okTests[i - 1] : null;
+    hist.append(h("div", { class: "li" },
+      h("div", { class: "ico num", text: t.status === "ok" ? String(i + 1) : "×" }),
+      h("div", { class: "body" },
+        h("span", { class: "title", text: t.status === "ok" ? t.wpm + " so‘z/daqiqa" : "Bekor qilingan urinish" }),
+        h("span", { class: "muted small", text: prettyDay(t.day) + " " + hm(t.start) + " · " + (t.sourceTitle || "") + (t.page ? ", " + t.page + "-bet" : "") }),
+        t.status === "ok" ? h("div", { class: "pills" },
+          t.comprehension != null ? h("span", { class: "pill " + (t.comprehension >= .7 ? "good" : t.comprehension >= .5 ? "warn" : "bad"), text: "Tushunish " + Math.round(t.comprehension * 100) + "%" }) : h("span", { class: "pill warn", text: "Tushunish o‘lchanmadi" }),
+          t.effective ? h("span", { class: "pill", text: "Samarali " + t.effective }) : null,
+          prev ? h("span", { class: "pill", text: (growthPct(prev.wpm, t.wpm) >= 0 ? "+" : "") + growthPct(prev.wpm, t.wpm) + "% oldingidan" }) : null,
+          t.method === "pointer" ? h("span", { class: "pill", text: "Ko‘rsatkich bilan" }) : null) : h("span", { class: "muted small", text: t.reason || "" })
+      )));
+  });
+  return [
+    h("section", { class: "card accent" },
+      h("h2", { text: "Diagnostika: 1 daqiqa + savollar" }),
+      h("p", { class: "muted small", text: "Odatdagidek o‘qing. 60 soniya tugaganda to‘xtagan so‘zingizni bosasiz, so‘ng Claude o‘sha qism bo‘yicha savol beradi. Tezlik ham, tushunish ham o‘lchanadi." }),
+      h("div", { class: "list", style: "gap:8px" },
+        ...PASSAGES.map(p => opt("p:" + p.id, p.title, usedPassages.has(p.id) ? "avval o‘qilgan — natija oshib ko‘rinishi mumkin" : "standart matn")),
+        ...books.map(b => opt("b:" + b.id, b.title, "kitobingizdan tasodifiy bet"))
+      ),
+      h("label", { class: "opt", for: "ptr" }, ptr, h("span", { text: "Ko‘rsatkich (barmoq yoki qalam) bilan o‘qiyman" })),
+      Store.sample ? null : h("p", { class: "notice small", text: "Claude ulanmagan: faqat tezlik o‘lchanadi, tushunish o‘lchanmaydi." }),
+      h("button", { class: "btn primary block", text: "Testni boshlash", onclick: () => startTest(ui.testSrc || src) })
+    ),
+    h("section", { class: "card" }, h("h2", { text: "Testlar tarixi" }), hist,
+      h("p", { class: "muted small", text: "O‘sish = (yangi − eski) ÷ eski × 100. Bir kunlik natija emas, yo‘nalish muhim." }))
+  ];
+}
+async function startTest(src) {
+  const t = await getTextFor(src);
+  if (t) runTest(Object.assign(t, { method: ui.testPtr ? "pointer" : "free" }));
+}
+async function getTextFor(src) {
+  let words = [], title = "", sourceId = "", page = null, source = "passage";
+  if (src.startsWith("p:")) {
+    const p = PASSAGES.find(x => "p:" + x.id === src) || PASSAGES[0];
+    title = p.title; sourceId = p.id;
+    words = p.text.split("\n").map(par => par.split(/\s+/).filter(Boolean));
+  } else {
+    const b = Store.books.get(src.slice(2)); if (!b) { toast("Kitob topilmadi."); return null; }
+    source = "book"; title = b.title; sourceId = b.id;
+    let pdf; try { ui.busyMsg = "Matn tayyorlanmoqda…"; render(); pdf = await getPdf(b); } catch (e) { ui.busyMsg = ""; render(); return null; }
+    const read = new Set(b.readPages || []);
+    const cands = []; for (let i = 3; i <= pdf.numPages - 2; i++) if (!read.has(i)) cands.push(i);
+    const pages = cands.length ? shuffle(cands) : shuffle(Array.from({ length: pdf.numPages }, (_, i) => i + 1));
+    for (const start of pages.slice(0, 6)) {
+      const paras = []; let count = 0;
+      for (let n = start; n <= Math.min(pdf.numPages, start + 3) && count < 420; n++) {
+        const t = await pageText(b.id, pdf, n); t.paras.forEach(pp => { paras.push(pp); count += wordsOf(pp).length; });
+      }
+      if (count >= 250) {
+        let joined = paras.join("\n");
+        const m = joined.search(/[.!?…]\s+\p{Lu}/u); if (m > -1 && m < 300) joined = joined.slice(m + 1).trim();
+        words = joined.split("\n").map(par => par.split(/\s+/).filter(Boolean)).filter(a => a.length);
+        page = start; break;
+      }
+    }
+    ui.busyMsg = ""; render();
+    if (!words.length) { toast("Kitobdan yetarli matn topilmadi. Standart matnni tanlang."); return null; }
+  }
+  return { words, title, sourceId, source, page };
+}
+function runTest(cfg) {
+  lockUI(true);
+  const v = $("#view");
+  const flat = [];
+  const textBox = h("div", { class: "readtext", style: "--fs:19px" });
+  cfg.words.forEach(par => { const p = h("p"); par.forEach((w, k) => { const s = h("span", { class: "w", text: w }); s.dataset.i = flat.length; flat.push(s); p.append(s); if (k < par.length - 1) p.append(" "); }); textBox.append(p); });
+  const bar = h("i"); const timebar = h("div", { class: "timebar" }, bar);
+  const head = h("div", { class: "row between" }, h("h2", { text: cfg.title }), h("span", { class: "pill num", text: "60" }));
+  const startBtn = h("button", { class: "btn primary block", text: "Boshlash — 60 soniya" });
+  const doneBtn = h("button", { class: "btn block", text: "Matn tugadi" });
+  const cancel = h("button", { class: "btn ghost", text: "Bekor qilish", onclick: () => { clearInterval(tm); lockUI(false); } });
+  const cover = h("div", { class: "card", style: "text-align:center" }, h("p", { text: "Matn shu yerda ochiladi. Tayyor bo‘lganingizda boshlang va odatdagi tezlikda, tushunib o‘qing." }), startBtn);
+  v.replaceChildren(h("section", { class: "card" }, head, timebar, cover), cancel);
+  let t0 = 0, tm = null, phase = "ready", elapsed = 0;
+  startBtn.onclick = () => {
+    phase = "read"; t0 = performance.now();
+    v.replaceChildren(h("section", { class: "card" }, head, timebar), h("section", { class: "card" }, textBox), doneBtn);
+    tm = setInterval(() => {
+      const s = (performance.now() - t0) / 1000;
+      bar.style.width = Math.min(100, s / 60 * 100) + "%"; $(".pill", head).textContent = String(Math.max(0, Math.ceil(60 - s)));
+      if (s >= 60) { clearInterval(tm); elapsed = 60; pickPhase(); }
+    }, 100);
+    window.scrollTo(0, 0);
+  };
+  doneBtn.onclick = () => { if (phase !== "read") return; clearInterval(tm); elapsed = (performance.now() - t0) / 1000; finish(flat.length - 1); };
+  function pickPhase() {
+    phase = "pick"; let left = 15;
+    textBox.classList.add("picking");
+    doneBtn.remove();
+    const msg = h("div", { class: "notice", style: "position:sticky;top:8px;z-index:3", text: "Vaqt tugadi! Qaysi so‘zda to‘xtadingiz? O‘sha so‘zga bosing — 15" });
+    textBox.parentNode.before(msg);
+    const pt = setInterval(() => { left--; msg.textContent = "Vaqt tugadi! Qaysi so‘zda to‘xtadingiz? O‘sha so‘zga bosing — " + left; if (left <= 0) { clearInterval(pt); textBox.onclick = null; cancelled("To‘xtagan so‘z 15 soniyada belgilanmadi."); } }, 1000);
+    textBox.onclick = e => { const w = e.target.closest(".w"); if (!w) return; clearInterval(pt); textBox.onclick = null; finish(+w.dataset.i); };
+  }
+  function cancelled(reason) {
+    Store.write("sessions", newId(), { kind: "test", status: "cancelled", reason, start: Date.now(), end: Date.now(), day: dayKey(Date.now()), source: cfg.source, sourceId: cfg.sourceId, sourceTitle: cfg.title, page: cfg.page });
+    v.replaceChildren(h("section", { class: "card" }, h("h2", { text: "Urinish bekor qilindi" }), h("p", { text: reason + " Jurnalga bekor qilingan urinish sifatida yozildi." }), h("button", { class: "btn primary", text: "Ortga", onclick: () => lockUI(false) })));
+  }
+  async function finish(idx) {
+    phase = "quiz";
+    flat.forEach((w, i) => { w.classList.toggle("picked", i === idx); w.classList.toggle("after", i > idx); });
+    const n = idx + 1, wpm = Math.round(n / (Math.max(elapsed, 5) / 60));
+    const readText = cfg.words.map(p => p.join(" ")).join("\n").split(/\s+/).slice(0, n).join(" ");
+    const rec = { kind: "test", status: "ok", start: Date.now() - Math.round(elapsed * 1000), end: Date.now(), day: dayKey(Date.now()), source: cfg.source, sourceId: cfg.sourceId, sourceTitle: cfg.title, page: cfg.page, method: cfg.method, words: n, sec: Math.round(elapsed), wpm, quiz: null, comprehension: null, effective: null };
+    const box = h("section", { class: "card" });
+    v.replaceChildren(box);
+    if (Store.sample && n >= 25) {
+      const q = await runQuiz(box, { text: readText, n: n >= 120 ? 5 : 3, title: "Tushunish savollari", allowSkip: true });
+      rec.quiz = Object.assign({ at: Date.now() }, q);
+      if (!q.skipped) { rec.comprehension = q.correct / q.n; rec.effective = Math.round(wpm * rec.comprehension); }
+    } else rec.quiz = { skipped: true, reason: Store.sample ? "short" : "no_sample" };
+    const prevOk = computeStats().tests;
+    Store.write("sessions", newId(), rec);
+    showResult(rec, prevOk);
+  }
+  function showResult(rec, prev) {
+    const first = prev[0], last = prev[prev.length - 1];
+    const parts = [h("h2", { text: "Natija" }),
+      h("div", { class: "grid2" },
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Tezlik" }), h("span", { class: "big" }, String(rec.wpm), h("small", { text: "s/d" })), h("span", { class: "sub num", text: rec.words + " so‘z · " + rec.sec + " soniya" })),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Tushunish" }), h("span", { class: "big" }, rec.comprehension != null ? Math.round(rec.comprehension * 100) + "%" : "—"), h("span", { class: "sub", text: rec.quiz && !rec.quiz.skipped ? rec.quiz.correct + " / " + rec.quiz.n + " to‘g‘ri" : "o‘lchanmadi" })),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Samarali tezlik" }), h("span", { class: "big" }, rec.effective != null ? String(rec.effective) : "—", h("small", { text: "s/d" })), h("span", { class: "sub", text: "tezlik × tushunish" })),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "O‘sish" }), h("span", { class: "big" }, last ? (growthPct(last.wpm, rec.wpm) >= 0 ? "+" : "") + growthPct(last.wpm, rec.wpm) + "%" : "—"), h("span", { class: "sub num", text: last ? "(" + rec.wpm + " − " + last.wpm + ") ÷ " + last.wpm + " × 100" : "Bu boshlang‘ich nuqtangiz" })))
+    ];
+    if (last) {
+      const g = growthPct(last.wpm, rec.wpm);
+      parts.push(h("p", { class: "notice info", text: g > 0 ? "Natija o‘sdi — texnika ishlayotganining belgisi. Bu hali cho‘qqi emas." : g === 0 ? "O‘zgarmadi. Qisqa muddatda bu odatiy: hozir tezlikdan ko‘ra eski odatlar ustida ishlayapsiz." : "Pasaydi. Bu ham odatiy: ko‘rsatkich va shtorka avvaliga sekinlashtiradi, ko‘z yangi intizomga o‘rganyapti." }));
+    }
+    if (rec.comprehension != null && rec.comprehension < 0.6) parts.push(h("p", { class: "notice", text: "Tushunish 60% dan past. Tezlikni biroz pasaytirib, ma’noga e’tibor bering — samarali tezlik shunda o‘sadi." }));
+    if (first && prev.length > 1) parts.push(h("p", { class: "muted small", text: "1-testdan beri: " + (growthPct(first.wpm, rec.wpm) >= 0 ? "+" : "") + growthPct(first.wpm, rec.wpm) + "% (" + first.wpm + " → " + rec.wpm + ")." }));
+    parts.push(h("button", { class: "btn primary", text: "Yopish", onclick: () => lockUI(false) }));
+    v.replaceChildren(h("section", { class: "card" }, ...parts));
+  }
+}
+
+/* ---- journal ---- */
+function sessionLine(s) {
+  const pills = [];
+  let ico = "O", title = "", sub = hm(s.start);
+  if (s.kind === "read") {
+    title = "O‘qish · " + (s.bookTitle || "kitob");
+    sub += " · faol " + clock(s.activeSec || 0) + " · " + (s.pagesDone || []).length + " bet";
+    if (isVerified(s)) pills.push(h("span", { class: "pill good", text: "Tasdiqlangan " + s.quiz.correct + "/" + s.quiz.n }));
+    else if (s.quiz && !s.quiz.skipped) pills.push(h("span", { class: "pill bad", text: "Test: " + s.quiz.correct + "/" + s.quiz.n }));
+    else if (s.status === "open") pills.push(h("span", { class: "pill warn", text: "Yakunlanmagan" }));
+    else pills.push(h("span", { class: "pill warn", text: s.quiz && s.quiz.reason === "short" ? "Test uchun qisqa" : s.quiz && s.quiz.reason === "user" ? "Test o‘tkazib yuborildi" : "Tasdiqlanmagan" }));
+    if ((s.pagesSkipped || []).length) pills.push(h("span", { class: "pill bad", text: s.pagesSkipped.length + " bet tez varaqlangan" }));
+    if (s.regressions) pills.push(h("span", { class: "pill", text: s.regressions + " regressiya" }));
+    const ms = s.modeSec || {};
+    if (ms.pointer) pills.push(h("span", { class: "pill", text: "Ko‘rsatkich " + mins(ms.pointer) + " daq" }));
+    if (ms.shtorka) pills.push(h("span", { class: "pill", text: "Shtorka " + mins(ms.shtorka) + " daq" }));
+    if (ms.block) pills.push(h("span", { class: "pill", text: "Bloklab " + mins(ms.block) + " daq" }));
+    const mt = s.metroSec || {};
+    if (mt.ritm) pills.push(h("span", { class: "pill", text: "Ritm " + mins(mt.ritm) + " daq" }));
+    if (mt.sanoq) pills.push(h("span", { class: "pill", text: "Sanoq " + mins(mt.sanoq) + " daq" }));
+    if (s.eyeBreaks || s.eyeSkipped) pills.push(h("span", { class: "pill " + (s.eyeSkipped ? "warn" : ""), text: "20-20-20: " + (s.eyeBreaks || 0) + (s.eyeSkipped ? ", " + s.eyeSkipped + " o‘tkazilgan" : "") }));
+    if (s.attnMissed) pills.push(h("span", { class: "pill warn", text: s.attnMissed + " tekshiruv javobsiz" }));
+  } else if (s.kind === "test") {
+    ico = "T"; title = s.status === "ok" ? "Diagnostika · " + s.wpm + " s/d" : "Diagnostika · bekor qilingan";
+    sub += " · " + (s.sourceTitle || "");
+    if (s.status === "ok") pills.push(s.comprehension != null ? h("span", { class: "pill " + (s.comprehension >= .7 ? "good" : "warn"), text: "Tushunish " + Math.round(s.comprehension * 100) + "%" }) : h("span", { class: "pill warn", text: "Tushunish o‘lchanmadi" }));
+  } else if (s.kind === "tachisto") { ico = "Tx"; title = "Taxistoskop · " + (s.bestMs ? s.bestMs + " ms" : "—"); sub += " · " + s.correct + "/" + s.trials + " to‘g‘ri"; }
+  else if (s.kind === "periph") { ico = "◦"; title = "Periferik · " + (s.bestPct ? s.bestPct + "%" : "—"); sub += " · " + s.correct + "/" + s.trials + " to‘g‘ri"; }
+  else if (s.kind === "palming") { ico = "K"; title = "Kaft bilan dam · 90 s"; }
+  else if (s.kind === "shulte") { ico = "Sh"; title = "Shulte " + s.size + "×" + s.size + " · " + s.sec + " s"; sub += " · " + s.errors + " xato"; }
+  else if (s.kind === "klin") { ico = "Kl"; title = "Klinovid jadval · " + s.sec + " s"; sub += " · tekshiruv " + s.correct + "/" + s.n; pills.push(h("span", { class: "pill " + (s.correct >= 2 ? "good" : "bad"), text: s.correct >= 2 ? "Ko‘rilgan" : "Ko‘rilmagan" })); }
+  else if (s.kind === "sakkad") { ico = "Sk"; title = "Sakkad · " + s.wpm + " s/d"; sub += " · " + s.words + " so‘z · " + s.fixMs + " ms"; pills.push(isVerified(s) ? h("span", { class: "pill good", text: "Tasdiqlangan " + s.quiz.correct + "/" + s.quiz.n }) : h("span", { class: "pill warn", text: s.quiz && !s.quiz.skipped ? "Test: " + s.quiz.correct + "/" + s.quiz.n : "Tasdiqlanmagan" })); }
+  else return null;
+  return h("div", { class: "li" }, h("div", { class: "ico", text: ico }), h("div", { class: "body" }, h("span", { class: "title", text: title }), h("span", { class: "muted small num", text: sub }), pills.length ? h("div", { class: "pills" }, pills) : null));
+}
+function viewLog() {
+  const S = Store.sessionsArr();
+  const groups = new Map();
+  S.forEach(s => { if (!groups.has(s.day)) groups.set(s.day, []); groups.get(s.day).push(s); });
+  const out = [h("p", { class: "notice info small", text: "Jurnal avtomatik yoziladi. Yozuvni tahrirlash yoki o‘chirish imkoni yo‘q — shuning uchun u sizning haqiqiy natijangiz." })];
+  if (!S.length) out.push(h("section", { class: "card" }, h("h2", { text: "Jurnal bo‘sh" }), h("ol", { class: "steps" }, h("li", { text: "Kitoblar bo‘limida PDF yuklang." }), h("li", { text: "Test bo‘limida diagnostikadan o‘ting." }), h("li", { text: "Har kuni 20 daqiqa o‘qing — shu yerda paydo bo‘ladi." }))));
+  for (const [day, arr] of groups) {
+    const readSec = arr.filter(s => s.kind === "read").reduce((a, s) => a + (s.activeSec || 0), 0);
+    const list = h("div", { class: "list" }, ...arr.map(sessionLine).filter(Boolean));
+    out.push(h("section", { class: "card" },
+      h("div", { class: "dayhead" }, h("span", { text: prettyDay(day) + " · " + day }), h("span", { class: "pill " + (readSec >= GOAL_SEC ? "good" : readSec ? "warn" : ""), text: mins(readSec) + "/20 daq" })),
+      list));
+  }
+  return out;
+}
+
+
+/* ============ 2-modul mashqlari ============ */
+function chooseSource(cb) {
+  const books = Store.booksArr().filter(b => !b.scanned);
+  openSheet([
+    h("h2", { text: "Qaysi matn?" }),
+    ...PASSAGES.map(p => h("button", { class: "btn block", style: "justify-content:flex-start;text-align:left", text: p.title + " · standart matn", onclick: () => { closeSheet(); cb("p:" + p.id); } })),
+    ...books.map(b => h("button", { class: "btn block", style: "justify-content:flex-start;text-align:left", text: b.title + " · tasodifiy bet", onclick: () => { closeSheet(); cb("b:" + b.id); } })),
+    h("button", { class: "btn ghost", text: "Bekor qilish", onclick: closeSheet })
+  ]);
+}
+function startShulte(size) {
+  const n = size * size, nums = shuffle(Array.from({ length: n }, (_, i) => i + 1));
+  let next = 1, errors = 0, t0 = 0, tm = null; const startAt = Date.now();
+  lockUI(true); ui.ex = { render: () => [] };
+  const v = $("#view");
+  const findP = h("span", { class: "pill num", text: "Topish: 1" });
+  const clockP = h("span", { class: "pill num", text: "0.0 s" });
+  const grid = h("div", { class: "shulte wait", style: "grid-template-columns:repeat(" + size + ",1fr)" });
+  nums.forEach(x => {
+    const b = h("button", { class: "cell", text: String(x), "aria-label": String(x), onclick: () => {
+      if (!t0 || next > n) return;
+      if (x === next) { b.classList.add("done"); next++; findP.textContent = "Topish: " + Math.min(next, n); if (next > n) finish(); }
+      else { errors++; b.classList.add("err"); setTimeout(() => b.classList.remove("err"), 280); }
+    } });
+    grid.append(b);
+  });
+  const startBtn = h("button", { class: "btn primary block", text: "Boshlash" });
+  startBtn.onclick = () => { grid.classList.remove("wait"); t0 = performance.now(); startBtn.remove(); tm = setInterval(() => { clockP.textContent = ((performance.now() - t0) / 1000).toFixed(1) + " s"; }, 100); };
+  const quit = h("button", { class: "btn ghost", text: "To‘xtatish (yozilmaydi)", onclick: () => { clearInterval(tm); exitEx(); } });
+  v.replaceChildren(h("section", { class: "card" },
+    h("div", { class: "row between" }, h("h2", { text: "Shulte " + size + "×" + size }), h("div", { class: "row" }, findP, clockP)),
+    h("p", { class: "muted small", text: "Ko‘zingizni o‘rtadagi nuqtada tuting. Raqamlarni nigoh bilan emas, ko‘rish maydoni bilan qidiring." }),
+    grid, startBtn), quit);
+  function finish() {
+    clearInterval(tm);
+    const sec = Math.round((performance.now() - t0) / 100) / 10;
+    const prev = computeStats().all.filter(s => s.kind === "shulte" && s.size === size).map(s => s.sec);
+    const best = prev.length ? Math.min(...prev) : null;
+    Store.write("sessions", newId(), { kind: "shulte", start: startAt, end: Date.now(), day: dayKey(startAt), size, sec, errors });
+    v.replaceChildren(h("section", { class: "card" },
+      h("h2", { text: "Shulte " + size + "×" + size + " natijasi" }),
+      h("div", { class: "grid2" },
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Vaqt" }), h("span", { class: "big" }, String(sec), h("small", { text: "s" })), h("span", { class: "sub", text: best ? (sec < best ? "Yangi rekord! Oldingi: " + best + " s" : "Eng yaxshisi: " + best + " s") : "Birinchi natija" })),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Xatolar" }), h("span", { class: "big" }, String(errors)), h("span", { class: "sub", text: "noto‘g‘ri bosishlar" }))),
+      h("button", { class: "btn primary", text: "Yana bir marta", onclick: () => startShulte(size) }),
+      h("button", { class: "btn ghost", text: "Mashqlarga qaytish", onclick: exitEx })));
+  }
+}
+function sylPool() {
+  const set = new Set();
+  wordPool().forEach(w => { const c = w.replace(/[‘’'-]/g, ""); if (c.length >= 3) set.add(c.slice(0, Math.random() < .5 ? 2 : 3).toUpperCase()); });
+  return Array.from(set).filter(x => /^\p{L}+$/u.test(x));
+}
+function startKlin() {
+  const pool = sylPool(); const pick = () => pool[Math.floor(Math.random() * pool.length)];
+  const ROWS = 12, rows = [];
+  for (let i = 0; i < ROWS; i++) { let a = pick(), b = pick(); while (b === a) b = pick(); rows.push({ d: 3 + i * 3, a, b }); }
+  lockUI(true); ui.ex = { render: () => [] };
+  const v = $("#view"); const startAt = Date.now(); let t0 = 0;
+  const tbl = h("div", { class: "klin", style: "visibility:hidden" });
+  rows.forEach((r, i) => tbl.append(h("div", { class: "kr" },
+    h("span", { class: "ks", text: r.a, style: "right:" + (50 + r.d) + "%" }),
+    h("span", { class: "kn", text: String(i + 1) }),
+    h("span", { class: "ks", text: r.b, style: "left:" + (50 + r.d) + "%" }))));
+  const btn = h("button", { class: "btn primary block", text: "Boshlash" });
+  const card = h("section", { class: "card" },
+    h("h2", { text: "Klinovid jadval" }),
+    h("p", { class: "muted small", text: "Ko‘zingizni faqat o‘rtadagi raqamlarda tuting va yuqoridan pastga sekin tushing. Har qatorda ikki chetdagi bo‘g‘inni birdan ko‘rishga harakat qiling. Oxirida qaysi qatorda nima bo‘lganini so‘raymiz." }),
+    tbl, btn);
+  v.replaceChildren(card, h("button", { class: "btn ghost", text: "To‘xtatish (yozilmaydi)", onclick: exitEx }));
+  btn.onclick = () => {
+    if (!t0) { t0 = performance.now(); tbl.style.visibility = "visible"; btn.textContent = "Tugatdim"; return; }
+    const sec = Math.round((performance.now() - t0) / 1000);
+    check(sec);
+  };
+  function check(sec) {
+    const idxs = shuffle(Array.from({ length: 8 }, (_, i) => i + 4)).slice(0, 3);
+    let k = 0, correct = 0;
+    const ask = () => {
+      if (k >= idxs.length) return done(sec, correct);
+      const r = rows[idxs[k]], right = r.a + " · " + r.b;
+      const opts = new Set([right]);
+      opts.add(r.a + " · " + pick()); opts.add(pick() + " · " + r.b);
+      while (opts.size < 4) { const o = rows[Math.floor(Math.random() * ROWS)]; opts.add(o.a + " · " + o.b); }
+      let answered = false;
+      const box = h("div", { class: "qopts" });
+      shuffle(Array.from(opts)).forEach(o => box.append(h("button", { class: "btn", style: "font-family:var(--font-read)", text: o, onclick: e => {
+        if (answered) return; answered = true;
+        if (o === right) { correct++; e.currentTarget.classList.add("right"); } else { e.currentTarget.classList.add("wrong"); $$("button", box).forEach(b => { if (b.textContent === right) b.classList.add("right"); }); }
+        setTimeout(() => { k++; ask(); }, o === right ? 500 : 1100);
+      } })));
+      card.replaceChildren(h("div", { class: "row between" }, h("h2", { text: "Tekshiruv" }), h("span", { class: "pill num", text: (k + 1) + " / 3" })),
+        h("p", { style: "font-size:16px;font-weight:600", text: (idxs[k] + 1) + "-qatorda qaysi juftlik bor edi?" }), box);
+    };
+    ask();
+  }
+  function done(sec, correct) {
+    Store.write("sessions", newId(), { kind: "klin", start: startAt, end: Date.now(), day: dayKey(startAt), sec, n: 3, correct, rows: ROWS });
+    card.replaceChildren(
+      h("h2", { text: "Klinovid jadval natijasi" }),
+      h("div", { class: "grid2" },
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Vaqt" }), h("span", { class: "big" }, String(sec), h("small", { text: "s" }))),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Tekshiruv" }), h("span", { class: "big" }, correct + "/3"), h("span", { class: "sub", text: correct >= 2 ? "Chetlarni ko‘ra olyapsiz" : "Sekinroq tushing" }))),
+      h("button", { class: "btn primary", text: "Yana bir marta", onclick: startKlin }),
+      h("button", { class: "btn ghost", text: "Mashqlarga qaytish", onclick: exitEx }));
+  }
+}
+async function startSakkad(src) {
+  const t = await getTextFor(src); if (!t) return;
+  const paras = []; let count = 0;
+  for (const p of t.words) { if (count >= 220) break; const take = p.slice(0, 220 - count); paras.push(take); count += take.length; }
+  lockUI(true); ui.ex = { render: () => [] };
+  const v = $("#view"); const startAt = Date.now();
+  const box = h("div", { class: "readtext sak", style: "--fs:18px;max-width:34ch" });
+  const flat = [];
+  paras.forEach(par => { const p = h("p"); par.forEach((w, k) => { const s = h("span", { class: "w", text: w }); flat.push(s); p.append(s); if (k < par.length - 1) p.append(" "); }); box.append(p); });
+  let fix = ui.sakFix || 450;
+  const fixV = h("b", { class: "num", style: "min-width:64px", text: "" });
+  const range = h("input", { type: "range", min: "200", max: "900", step: "25", value: String(fix), id: "sakFix" });
+  const wpmV = h("p", { class: "muted small num" });
+  const play = h("button", { class: "btn primary block", text: "Boshlash" });
+  let stop = false, tt = null;
+  const top = h("section", { class: "card" },
+    h("div", { class: "row between" }, h("h2", { text: "Sakkad mashqi" }), h("span", { class: "pill", text: t.title })),
+    h("p", { class: "muted small", text: "Faqat yoritilgan bo‘lakka qarang va keyingisiga sakrang. Ichki ovozsiz, bo‘lakni bir butun ko‘ring." }),
+    h("label", { class: "row", for: "sakFix", style: "flex-wrap:nowrap;gap:10px" }, fixV, range), wpmV, play);
+  v.replaceChildren(top, h("section", { class: "card" }, box), h("button", { class: "btn ghost", text: "To‘xtatish (yozilmaydi)", onclick: () => { stop = true; clearTimeout(tt); exitEx(); } }));
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const chunks = []; let line = [], lt = null;
+  const pushLine = ws => { if (!ws.length) return; const k = Math.min(3, ws.length), per = Math.ceil(ws.length / k); for (let i = 0; i < ws.length; i += per) chunks.push(ws.slice(i, i + per)); };
+  flat.forEach(w => { const tp = w.offsetTop; if (lt !== null && Math.abs(tp - lt) > 4) { pushLine(line); line = []; } lt = tp; line.push(w); });
+  pushLine(line);
+  const wpmOf = f => Math.round(flat.length / (chunks.length * f / 60000));
+  const upd = () => { fixV.textContent = fix + " ms"; wpmV.textContent = "≈ " + wpmOf(fix) + " so‘z/daqiqa · " + chunks.length + " ta to‘xtash · " + flat.length + " so‘z"; };
+  range.oninput = e => { fix = +e.target.value; ui.sakFix = fix; upd(); }; upd();
+  let i = 0, running = false, prevTop = -1;
+  play.onclick = () => {
+    if (running) { running = false; clearTimeout(tt); play.textContent = "Davom etish"; return; }
+    running = true; range.disabled = true; play.textContent = "Pauza"; step();
+  };
+  function step() {
+    if (!running || stop) return;
+    if (i > 0) chunks[i - 1].forEach(w => w.classList.remove("fx"));
+    if (i >= chunks.length) { finish(); return; }
+    chunks[i].forEach(w => w.classList.add("fx"));
+    const tp = chunks[i][0].offsetTop;
+    if (tp !== prevTop) { prevTop = tp; chunks[i][0].scrollIntoView({ block: "center", behavior: "smooth" }); }
+    i++; tt = setTimeout(step, fix);
+  }
+  async function finish() {
+    running = false;
+    const text = paras.map(p => p.join(" ")).join("\n");
+    const rec = { kind: "sakkad", start: startAt, end: Date.now(), day: dayKey(startAt), source: t.source, sourceTitle: t.title, fixMs: fix, wpm: wpmOf(fix), words: flat.length, chunks: chunks.length, quiz: null };
+    const qbox = h("section", { class: "card" });
+    v.replaceChildren(qbox); window.scrollTo(0, 0);
+    if (Store.sample) { const q = await runQuiz(qbox, { text, n: 3, title: "Tushundingizmi?" }); rec.quiz = Object.assign({ at: Date.now() }, q); }
+    else rec.quiz = { skipped: true, reason: "no_sample" };
+    Store.write("sessions", newId(), rec);
+    const ok = isVerified(rec);
+    qbox.replaceChildren(
+      h("h2", { text: "Sakkad natijasi" }),
+      h("div", { class: "grid2" },
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Tezlik" }), h("span", { class: "big" }, String(rec.wpm), h("small", { text: "s/d" })), h("span", { class: "sub", text: fix + " ms har nigohga" })),
+        h("div", { class: "tile" }, h("span", { class: "label", text: "Tushunish" }), h("span", { class: "big" }, rec.quiz && !rec.quiz.skipped ? rec.quiz.correct + "/" + rec.quiz.n : "—"), h("span", { class: "sub", text: ok ? "Tasdiqlandi" : "Tasdiqlanmadi" }))),
+      h("p", { class: "notice info small", text: ok ? "Yaxshi. Keyingi safar har nigohni 25 ms qisqartirib ko‘ring." : "Tushunish past bo‘lsa, nigoh vaqtini oshiring: tezlik tushunishsiz foyda bermaydi." }),
+      h("button", { class: "btn primary", text: "Yana bir matn", onclick: () => { exitEx(); chooseSource(startSakkad); } }),
+      h("button", { class: "btn ghost", text: "Mashqlarga qaytish", onclick: exitEx }));
+  }
+}
+
+/* ============ uyga vazifa ============ */
+const HW_MODES = { pointer: "Ko‘rsatkich", shtorka: "Shtorka", block: "Bloklab", ritm: "Ritm 4+2", sanoq: "Sanoq" };
+const HW_EX = { test: "Diagnostika", tachisto: "Taxistoskop", periph: "Periferik ko‘rish", shulte: "Shulte jadvali", klin: "Klinovid jadval", sakkad: "Sakkad mashqi", palming: "Kaft bilan dam" };
+function hwArr() { return Array.from(Store.homework.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); }
+function hwTitle(hw) {
+  if (hw.type === "read_daily") return "Har kuni " + hw.target + " daqiqa o‘qish" + (hw.verifiedOnly ? " (faqat tasdiqlangan)" : "");
+  if (hw.type === "mode_min") return (HW_MODES[hw.sub] || hw.sub) + " rejimida jami " + hw.target + " daqiqa";
+  if (hw.type === "ex_count") return (HW_EX[hw.sub] || hw.sub) + " — " + hw.target + " marta";
+  return "Vazifa";
+}
+function daysBetween(from, to) { const out = []; const d = new Date(from + "T00:00:00"), end = new Date(to + "T00:00:00"); while (d <= end && out.length < 400) { out.push(dayKey(d.getTime())); d.setDate(d.getDate() + 1); } return out; }
+function hwProgress(hw, S) {
+  const inR = s => s.day >= hw.from && s.day <= hw.to;
+  if (hw.type === "read_daily") {
+    const days = daysBetween(hw.from, hw.to), per = new Map();
+    S.forEach(s => { if (s.kind === "read" && inR(s) && (!hw.verifiedOnly || isVerified(s))) per.set(s.day, (per.get(s.day) || 0) + (s.activeSec || 0)); });
+    const met = days.filter(k => (per.get(k) || 0) >= hw.target * 60).length;
+    return { value: met, target: days.length, unit: "kun" };
+  }
+  if (hw.type === "mode_min") {
+    let sec = 0; S.forEach(s => { if (s.kind === "read" && inR(s)) sec += (s.modeSec && s.modeSec[hw.sub]) || (s.metroSec && s.metroSec[hw.sub]) || 0; });
+    return { value: Math.floor(sec / 60), target: hw.target, unit: "daq" };
+  }
+  const v = S.filter(s => inR(s) && s.kind === hw.sub && (s.kind !== "test" || s.status === "ok")).length;
+  return { value: v, target: hw.target, unit: "marta" };
+}
+function hwStatus(hw, pr) {
+  const today = dayKey(Date.now());
+  if (pr.value >= pr.target) return ["good", "Bajarildi"];
+  if (hw.to < today) return ["bad", "Muddati o‘tdi"];
+  if (hw.from > today) return ["", "Hali boshlanmagan"];
+  return ["warn", "Jarayonda"];
+}
+function hwCard(S, title) {
+  const old = dayKey(Date.now() - 7 * DAY);
+  const hws = hwArr().filter(hw => hw.to >= old);
+  if (!hws.length) return null;
+  const list = h("div", { class: "list" });
+  hws.forEach(hw => {
+    const pr = hwProgress(hw, S), [cls, label] = hwStatus(hw, pr);
+    list.append(h("div", { class: "li" }, h("div", { class: "ico", text: "V" }), h("div", { class: "body" },
+      h("span", { class: "title", text: hwTitle(hw) }),
+      h("span", { class: "muted small num", text: prettyDay(hw.from) + " – " + prettyDay(hw.to) + (hw.note ? " · " + hw.note : "") }),
+      h("div", { class: "row between" }, h("span", { class: "small num", text: pr.value + " / " + pr.target + " " + pr.unit }), h("span", { class: "pill " + cls, text: label })),
+      h("div", { class: "bar" }, h("i", { style: "width:" + Math.min(100, Math.round(pr.value / Math.max(1, pr.target) * 100)) + "%" })))));
+  });
+  return h("section", { class: "card" }, h("h2", { text: title }), h("p", { class: "muted small", text: "Bajarilishi jurnaldan avtomatik hisoblanadi — belgilab qo‘yish tugmasi yo‘q." }), list);
+}
+function confirmSheet(title, text, fn) {
+  openSheet([h("h2", { text: title }), h("p", { class: "muted", text }),
+    h("button", { class: "btn danger", text: "Ha, o‘chirish", onclick: () => { closeSheet(); fn(); } }),
+    h("button", { class: "btn ghost", text: "Bekor qilish", onclick: closeSheet })]);
+}
+function hwForm() {
+  const type = h("select", { id: "hwType" },
+    h("option", { value: "read_daily", text: "Har kuni o‘qish (daqiqa/kun)" }),
+    h("option", { value: "mode_min", text: "Rejimda mashq (jami daqiqa)" }),
+    h("option", { value: "ex_count", text: "Mashq yoki test (necha marta)" }));
+  const sub = h("select", { id: "hwSub" });
+  const subF = h("label", { class: "field", for: "hwSub" }, "Qaysi biri", sub);
+  const target = h("input", { type: "number", id: "hwTarget", min: "1", max: "600", value: "20" });
+  const days = h("input", { type: "number", id: "hwDays", min: "1", max: "60", value: "7" });
+  const ver = h("input", { type: "checkbox", id: "hwVer" });
+  const verF = h("label", { class: "opt", for: "hwVer" }, ver, h("span", { text: "Faqat tasdiqlangan (testdan o‘tgan) o‘qish hisoblansin" }));
+  const note = h("input", { type: "text", id: "hwNote", maxlength: "120", placeholder: "Masalan: o‘zbek yozuvchisining qissasi" });
+  const sync = () => {
+    const t = type.value;
+    sub.replaceChildren(...Object.entries(t === "mode_min" ? HW_MODES : HW_EX).map(([k, v]) => h("option", { value: k, text: v })));
+    subF.hidden = t === "read_daily"; verF.hidden = t !== "read_daily";
+    target.value = t === "read_daily" ? "20" : t === "mode_min" ? "60" : "5";
+  };
+  type.onchange = sync; sync();
+  openSheet([
+    h("h2", { text: "Yangi vazifa" }),
+    h("label", { class: "field", for: "hwType" }, "Turi", type), subF,
+    h("div", { class: "grid2" }, h("label", { class: "field", for: "hwTarget" }, "Maqsad", target), h("label", { class: "field", for: "hwDays" }, "Muddat (kun, bugundan)", days)),
+    verF,
+    h("label", { class: "field", for: "hwNote" }, "Izoh (ixtiyoriy)", note),
+    h("button", { class: "btn primary", text: "Vazifani berish", onclick: () => {
+      const tg = Math.round(+target.value), dn = Math.round(+days.value);
+      if (!(tg >= 1 && tg <= 600)) { toast("Maqsad 1 dan 600 gacha bo‘lsin."); return; }
+      if (!(dn >= 1 && dn <= 60)) { toast("Muddat 1 dan 60 kungacha bo‘lsin."); return; }
+      const now = Date.now();
+      Store.setHomework(newId(), { type: type.value, sub: type.value === "read_daily" ? null : sub.value, target: tg, verifiedOnly: type.value === "read_daily" && ver.checked, from: dayKey(now), to: dayKey(now + (dn - 1) * DAY), note: note.value.trim(), createdAt: now });
+      closeSheet(); toast("Vazifa berildi.");
+    } }),
+    h("button", { class: "btn ghost", text: "Bekor qilish", onclick: closeSheet })
+  ]);
+}
+
+/* ============ ustoz paneli ============ */
+async function fetchNames(ids) {
+  if (Store.mode === "api") { if (Date.now() - (Store.studentsAt || 0) > 30000 && !ui.stuLoading) { ui.stuLoading = true; Store.studentsAt = Date.now(); Store.loadStudents().finally(() => ui.stuLoading = false); } return; }
+  const miss = ids.filter(i => !ui.names.has(i));
+  if (!miss.length || !Store.user || ui.namesLoading) return;
+  ui.namesLoading = true;
+  try { const ps = await Store.user.profiles(miss); miss.forEach(i => ui.names.set(i, (ps && ps[i] && ps[i].name) || "")); }
+  catch (e) { miss.forEach(i => ui.names.set(i, "")); }
+  ui.namesLoading = false; changed();
+}
+function studentName(id, i) { if (id === Store.uid) return "Siz"; return ui.names.get(id) || "O‘quvchi " + (i + 1); }
+function ago(ts) { if (!ts) return "—"; const m = Math.round((Date.now() - ts) / 60000); if (m < 2) return "hozir"; if (m < 60) return m + " daq oldin"; const hh = Math.round(m / 60); if (hh < 24) return hh + " soat oldin"; return Math.round(hh / 24) + " kun oldin"; }
+function openStudent(id) {
+  closeStudentSub(); ui.tStudent = id; ui.tSess = null;
+  if (Store.mode === "api") {
+    api("GET", "/api/students/" + id + "/sessions").then(arr => { if (ui.tStudent === id) { ui.tSess = arr; changed(); } }).catch(e => { ui.tSess = []; toast(e.message || "Natijalarni o‘qib bo‘lmadi."); changed(); });
+    render(); window.scrollTo(0, 0); return;
+  }
+  ui.tUnsub = Store.db.collection("students/" + id + "/sessions").orderBy("start", "desc").limit(1000).onSnapshot(s => {
+    ui.tSess = s.docs.map(d => Object.assign({ id: d.id }, d.data())); changed();
+  }, e => { ui.tSess = []; toast("O‘quvchi natijalarini o‘qib bo‘lmadi (" + e.code + ")."); changed(); });
+  render(); window.scrollTo(0, 0);
+}
+function closeStudentSub() { if (ui.tUnsub) { try { ui.tUnsub(); } catch (e) {} } ui.tUnsub = null; }
+function viewTeacher() {
+  if (!Store.isTeacher) return [h("p", { class: "empty", text: "Bu bo‘lim faqat ustoz uchun." })];
+  if (ui.tStudent) return viewStudent();
+  const out = [];
+  const hwList = h("div", { class: "list" });
+  const hws = hwArr();
+  if (!hws.length) hwList.append(h("p", { class: "empty", text: "Hali vazifa berilmagan." }));
+  hws.forEach(hw => hwList.append(h("div", { class: "li" }, h("div", { class: "ico", text: "V" }), h("div", { class: "body" },
+    h("span", { class: "title", text: hwTitle(hw) }),
+    h("span", { class: "muted small num", text: prettyDay(hw.from) + " – " + prettyDay(hw.to) + (hw.note ? " · " + hw.note : "") }),
+    h("div", { class: "row" }, h("button", { class: "btn sm danger", text: "O‘chirish", onclick: () => confirmSheet("Vazifani o‘chirasizmi?", "O‘quvchilarning jurnali o‘chmaydi, faqat bu vazifa ro‘yxatdan olinadi.", () => Store.deleteHomework(hw.id)) }))))));
+  out.push(h("section", { class: "card" }, h("div", { class: "row between" }, h("h2", { text: "Uyga vazifalar" }), h("button", { class: "btn sm primary", text: "+ Vazifa", onclick: hwForm })), hwList));
+  const studs = Array.from(Store.students.values()).sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+  fetchNames(studs.map(s => s.id));
+  const today = dayKey(Date.now());
+  const tbody = h("tbody");
+  studs.forEach((s, i) => {
+    const m = s.sum || {}; const tsec = m.todayDay === today ? m.todaySec || 0 : 0;
+    tbody.append(h("tr", { class: "click", tabindex: "0", onclick: () => openStudent(s.id), onkeydown: e => { if (e.key === "Enter") openStudent(s.id); } },
+      h("td", null, h("b", { text: studentName(s.id, i) })),
+      h("td", null, h("span", { class: "pill " + (tsec >= GOAL_SEC ? "good" : tsec ? "warn" : "bad"), text: mins(tsec) + "/20" })),
+      h("td", { class: "num", text: String(m.streak || 0) }),
+      h("td", { class: "num", text: m.lastWpm ? m.lastWpm + (m.firstWpm && m.firstWpm !== m.lastWpm ? " (" + (growthPct(m.firstWpm, m.lastWpm) >= 0 ? "+" : "") + growthPct(m.firstWpm, m.lastWpm) + "%)" : "") : "—" }),
+      h("td", { class: "num", text: m.honesty == null ? "—" : m.honesty + "%" }),
+      h("td", { class: "muted", text: ago(s.lastSeen) })));
+  });
+  out.push(h("section", { class: "card" },
+    h("div", { class: "row between" }, h("h2", { text: "O‘quvchilar" }), h("span", { class: "muted small num", text: studs.length + " kishi" })),
+    studs.length ? h("div", { class: "tblwrap" }, h("table", { class: "tbl" },
+      h("thead", null, h("tr", null, ["Ism", "Bugun", "Seriya", "Tezlik", "Halollik", "Faollik"].map(t => h("th", { text: t })))), tbody))
+      : h("p", { class: "empty", text: "Hali hech kim kirmagan." }),
+    h("p", { class: "muted small", text: "Qatorni bosing — o‘quvchining to‘liq statistikasi ochiladi. Siz natijalarni ko‘rasiz, lekin o‘zgartira olmaysiz." })));
+  if (Store.mode === "api") out.push(h("section", { class: "card" },
+    h("h2", { text: "O‘quvchini qanday qo‘shaman?" }),
+    h("ol", { class: "steps" },
+      h("li", { text: "O‘quvchiga botingiz havolasini yuboring." }),
+      h("li", { text: "U /start bosib, “Fikrlab’ni ochish” tugmasi orqali kiradi." }),
+      h("li", { text: "Birinchi ochishdayoq shu ro‘yxatda paydo bo‘ladi." }))));
+  else out.push(h("section", { class: "card" },
+    h("h2", { text: "O‘quvchini qanday qo‘shaman?" }),
+    h("ol", { class: "steps" },
+      h("li", { text: "claude.ai’da shu ilovani oching va “Share” tugmasini bosing." }),
+      h("li", { text: "O‘quvchini “Contributor” darajasida qo‘shing — shunda u o‘z natijasini yoza oladi." }),
+      h("li", { text: "U ilovani bir marta ochgach, shu ro‘yxatda paydo bo‘ladi." })),
+    h("p", { class: "notice small", text: "Cheklov: Claude’da boshqa odam ma’lumot yoza olishi uchun u sizning tashkilotingizda (Team yoki Enterprise) bo‘lishi kerak. Oddiy obunada o‘quvchilar faqat ko‘ra oladi. Ko‘p o‘quvchi uchun Telegram versiyasi kerak." })));
+  return out;
+}
+function viewStudent() {
+  const studs = Array.from(Store.students.values()).sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+  const i = studs.findIndex(s => s.id === ui.tStudent);
+  const back = h("button", { class: "btn sm", text: "← O‘quvchilar", onclick: () => { closeStudentSub(); ui.tStudent = null; render(); } });
+  const head = h("div", { class: "row between" }, back, h("h2", { text: studentName(ui.tStudent, Math.max(0, i)) }));
+  if (!ui.tSess) return [head, h("div", { class: "card row" }, h("div", { class: "spin" }), "Natijalar yuklanmoqda…")];
+  const S = ui.tSess.slice().sort((a, b) => b.start - a.start);
+  const st = computeStats(S); const lt = st.tests[st.tests.length - 1], ft = st.tests[0];
+  const out = [head];
+  out.push(h("section", { class: "grid2" },
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Bugun" }), h("span", { class: "big" }, String(mins(st.today.readSec)), h("small", { text: "/20 daq" })), h("span", { class: "sub", text: st.today.pages + " bet · " + st.today.regress + " regressiya" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Seriya" }), h("span", { class: "big" }, String(st.streak), h("small", { text: "kun" }))),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Tezlik" }), h("span", { class: "big" }, lt ? String(lt.wpm) : "—", h("small", { text: "s/d" })), h("span", { class: "sub", text: lt && st.tests.length > 1 ? (growthPct(ft.wpm, lt.wpm) >= 0 ? "+" : "") + growthPct(ft.wpm, lt.wpm) + "% 1-testdan" : "" })),
+    h("div", { class: "tile" }, h("span", { class: "label", text: "Halollik (14 kun)" }), h("span", { class: "big" }, st.honesty == null ? "—" : st.honesty + "%"), h("span", { class: "sub", text: "tasdiqlangan o‘qish ulushi" }))));
+  out.push(h("section", { class: "card" }, h("div", { class: "row between" }, h("h2", { text: "So‘nggi 14 kun" }), h("span", { class: "muted small num", text: mins(st.tot14) + " daq · " + st.pages14 + " bet · " + st.reg14 + " regressiya" })), svgEl(barChart(st.last14))));
+  if (st.tests.length) out.push(h("section", { class: "card" }, h("h2", { text: "Diagnostika" }), svgEl(lineChart(st.tests))));
+  const hwc = hwCard(S, "Vazifalar bajarilishi"); if (hwc) out.push(hwc);
+  const list = h("div", { class: "list" }, ...S.slice(0, 25).map(s => { const l = sessionLine(s); if (l) $(".muted", l).textContent = prettyDay(s.day) + " " + $(".muted", l).textContent; return l; }).filter(Boolean));
+  out.push(h("section", { class: "card" }, h("h2", { text: "Oxirgi yozuvlar" }), S.length ? list : h("p", { class: "empty", text: "Hali yozuv yo‘q." })));
+  return out;
+}
+
+/* ============ boot ============ */
+setRoute();
+updateTodayChip();
+Store.init();
+</script>
+</body>
+</html>
