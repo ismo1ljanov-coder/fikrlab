@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Fikrlab — Tez o‘qish trenajyorlari</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F7FB;--surface:#FFFFFF;--ink:#14183A;--muted:#5A6082;--line:#DDE2F0;
+  --brand:#2B3FE0;--brand-ink:#FFFFFF;--hl:#FFE45C;--hl-ink:#14183A;--ok:#0E9F75;--bad:#E5484D;
+}
+:root.dark{--bg:#0E1130;--surface:#171B45;--ink:#EEF0FF;--muted:#A3A9D1;--line:#2A2F63;--brand:#7C8BFF;--brand-ink:#0E1130;--ok:#3DD6A6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Onest,system-ui,sans-serif;overscroll-behavior:none}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px));user-select:none;-webkit-user-select:none}
+h1,h2,h3{font-family:"Bricolage Grotesque",Onest,sans-serif;line-height:1.15;margin:0;letter-spacing:-.02em}
+button{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{font:800 24px "Bricolage Grotesque",sans-serif;letter-spacing:-.03em}
+.logo i{font-style:normal;background:var(--hl);color:var(--hl-ink);padding:0 6px;border-radius:6px}
+.streak{font-weight:600;font-size:14px;background:var(--surface);border:1.5px solid var(--line);padding:6px 12px;border-radius:999px}
+.hello{font-size:26px;font-weight:800;margin:4px 0 4px}
+.muted{color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--brand);color:var(--brand-ink);font-weight:600;padding:13px 20px;border-radius:12px;border:0;cursor:pointer;font-size:16px;min-height:48px}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.full{width:100%}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:18px;margin-top:14px}
+.card h3{font-size:20px;margin-bottom:4px}
+.card p{margin:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:16px 14px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:118px}
+.tile:active{transform:scale(.98)}
+.tile .ic{font-size:26px}
+.tile b{font-family:"Bricolage Grotesque",sans-serif;font-size:17px;line-height:1.2}
+.tile small{color:var(--muted);font-size:13px;line-height:1.35}
+.sect{font-size:20px;margin:22px 0 0}
+.screen{display:none}.screen.on{display:block}
+.stage{height:120px;margin:14px 0;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;font:700 clamp(30px,9vw,42px) "Bricolage Grotesque",sans-serif;position:relative;overflow:hidden}
+.stage::before,.stage::after{content:"";position:absolute;left:50%;width:2px;height:14px;background:var(--line)}
+.stage::before{top:0}.stage::after{bottom:0}
+.word{display:grid;grid-template-columns:1fr auto 1fr;width:100%;align-items:baseline}
+.word .l{text-align:right}.word .c{background:var(--hl);color:var(--hl-ink);padding:0 2px;border-radius:4px}
+.ctrl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px}
+.ctrl label{font-weight:500;display:flex;align-items:center;gap:10px;flex:1;min-width:180px}
+input[type=range]{flex:1;accent-color:var(--brand)}
+output{font-weight:600}
+.fl{height:96px;margin:14px 0;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;font:700 clamp(26px,8vw,38px) "Bricolage Grotesque",sans-serif;letter-spacing:.08em}
+.inp{flex:1;min-width:0;padding:12px 14px;font:inherit;font-size:18px;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;user-select:text;-webkit-user-select:text}
+select.inp{flex:0 0 auto;min-width:84px}
+.opts{display:grid;gap:8px;margin:12px 0}
+.opts button{padding:13px;font-weight:600;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;cursor:pointer;text-align:left}
+.ok{background:var(--ok)!important;color:#fff!important;border-color:var(--ok)!important}
+.no{background:var(--bad)!important;color:#fff!important;border-color:var(--bad)!important}
+.txt{margin:14px 0;padding:14px;background:var(--bg);border-radius:14px;line-height:1.7}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:14px 0}
+.mem button{aspect-ratio:1;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;cursor:pointer}
+.mem button.on{background:var(--hl);border-color:var(--hl)}
+.sch{display:grid;gap:6px;margin:14px 0}
+.sch button{aspect-ratio:1;font:700 clamp(18px,5vw,24px) "Bricolage Grotesque",sans-serif;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;cursor:pointer}
+.sch button.done{background:var(--ok);color:#fff;border-color:var(--ok)}
+.sch button.bad{background:var(--bad);color:#fff}
+.dotbox{position:relative;height:200px;margin:14px 0;background:var(--bg);border-radius:14px;overflow:hidden}
+#dot{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--brand);left:10px;top:89px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.stat{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:16px}
+.stat b{display:block;font:800 26px "Bricolage Grotesque",sans-serif}
+.stat span{color:var(--muted);font-size:13px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1.5px solid var(--line);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav button{flex:1;background:none;border:0;padding:8px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+nav button .ic{font-size:20px}
+nav button.on{color:var(--brand);background:var(--bg)}
+.tip{font-size:14px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<!-- ============ ASOSIY ============ -->
+<section class="screen on" id="s-home">
+<div class="wrap">
+  <div class="top"><div class="logo">fikr<i>lab</i></div><div class="streak" id="hStreak">🔥 0 kun</div></div>
+  <div class="hello" id="hello">Salom!</div>
+  <p class="muted" style="margin:0">Bugun 10 daqiqa mashq qiling — tezlik o‘zi keladi.</p>
+
+  <div class="card">
+    <h3>Tez o‘qish demosi</h3>
+    <p class="muted" style="font-size:14px">So‘zlar bitta-bitta chiqadi — ko‘zingizni markazda ushlang.</p>
+    <div class="stage" id="stage"><div class="word"><span class="l"></span><span class="c">B</span><span class="r">oshlash</span></div></div>
+    <div class="ctrl">
+      <label>Tezlik <input id="wpm" type="range" min="150" max="900" step="50" value="300"><output id="out">300</output></label>
+      <button class="btn" id="go" type="button">Boshlash</button>
+    </div>
+  </div>
+
+  <h2 class="sect">Trenajyorlar</h2>
+  <div class="grid">
+    <button class="tile" data-open="schulte"><span class="ic">🔢</span><b>Schulte jadvali</b><small>Raqamlarni tartib bilan toping</small></button>
+    <button class="tile" data-open="dot"><span class="ic">🎯</span><b>Nuqta ortidan</b><small>Ko‘z harakatini boshqarish</small></button>
+    <button class="tile" data-open="vision"><span class="ic">👁️</span><b>Ko‘rish maydoni</b><small>Bir qarashda ko‘proq ilg‘ash</small></button>
+    <button class="tile" data-open="word"><span class="ic">⚡</span><b>Bir qarashda so‘z</b><small>So‘zni yaxlit tanish</small></button>
+    <button class="tile" data-open="text"><span class="ic">📖</span><b>Matn va tushunish</b><small>Tezlik + tushunish testi</small></button>
+    <button class="tile" data-open="memory"><span class="ic">🧠</span><b>Xotira jadvali</b><small>Ko‘rganni eslab qolish</small></button>
+  </div>
+</div>
+</section>
+
+<!-- ============ MASHQLAR ============ -->
+<section class="screen" id="s-schulte"><div class="wrap">
+  <h2>🔢 Schulte jadvali</h2>
+  <p class="muted">1 dan boshlab raqamlarni tartib bilan bosing. Ko‘zingiz jadval markazida tursin.</p>
+  <div id="sch" class="sch"></div>
+  <div class="ctrl"><select class="inp" id="schN"><option value="3">3×3</option><option value="4">4×4</option><option value="5" selected>5×5</option></select><output id="schOut">0.0 s · Xato: 0</output></div>
+  <button class="btn full" id="schGo" type="button" style="margin-top:12px">Yangi jadval</button>
+</div></section>
+
+<section class="screen" id="s-dot"><div class="wrap">
+  <h2>🎯 Nuqta ortidan</h2>
+  <p class="muted">Boshni qimirlatmay, faqat ko‘z bilan nuqtaga ergashing. 1–2 daqiqa yetarli.</p>
+  <div class="dotbox" id="dotbox"><span id="dot"></span></div>
+  <div class="ctrl"><label>Tezlik <input id="dotSpeed" type="range" min="1" max="8" value="3"></label><button class="btn" id="dotGo" type="button">Boshlash</button></div>
+</div></section>
+
+<section class="screen" id="s-vision"><div class="wrap">
+  <h2>👁️ Ko‘rish maydoni</h2>
+  <p class="muted">Raqamlar bir lahzaga chaqnaydi. Hammasini yaxlit ilg‘ab, yozing.</p>
+  <div class="fl" id="vFlash">?</div>
+  <div class="ctrl"><input class="inp" id="vIn" inputmode="numeric" placeholder="Raqamlar"><button class="btn" id="vChk" type="button">Boshlash</button></div>
+  <p id="vOut" class="tip"></p>
+</div></section>
+
+<section class="screen" id="s-word"><div class="wrap">
+  <h2>⚡ Bir qarashda so‘z</h2>
+  <p class="muted">So‘z 0,3 soniya ko‘rinadi. Qaysi so‘z chiqqanini tanlang.</p>
+  <div class="fl" id="wFlash">?</div><div class="opts" id="wOpts"></div>
+  <div class="ctrl"><output id="wOut">To‘g‘ri: 0 / 0</output></div>
+  <button class="btn full" id="wGo" type="button" style="margin-top:12px">Boshlash</button>
+</div></section>
+
+<section class="screen" id="s-text"><div class="wrap">
+  <h2>📖 Matn va tushunish</h2>
+  <p class="muted">Matnni o‘qing, tugatgach tugmani bosing: tezlik va tushunish hisoblanadi.</p>
+  <div class="txt" id="tBox">Boshlash tugmasini bosing.</div><div class="opts" id="tOpts"></div>
+  <output id="tOut"></output>
+  <button class="btn full" id="tGo" type="button" style="margin-top:12px">Boshlash</button>
+</div></section>
+
+<section class="screen" id="s-memory"><div class="wrap">
+  <h2>🧠 Xotira jadvali</h2>
+  <p class="muted">Yongan katakchalarni eslab qoling, so‘ng ularni bosing.</p>
+  <div class="mem" id="mem"></div>
+  <div class="ctrl"><output id="mOut">Daraja 1</output></div>
+  <button class="btn full" id="mGo" type="button" style="margin-top:12px">Boshlash</button>
+</div></section>
+
+<!-- ============ NATIJALAR ============ -->
+<section class="screen" id="s-stats"><div class="wrap">
+  <h2>Mening natijalarim</h2>
+  <p class="muted">Rekordlar Telegram hisobingizga saqlanadi — istalgan qurilmada ko‘rinadi.</p>
+  <div class="stats">
+    <div class="stat"><b id="r-schulte">—</b><span>Schulte rekordi (5×5)</span></div>
+    <div class="stat"><b id="r-wpm">—</b><span>Eng yuqori tezlik</span></div>
+    <div class="stat"><b id="r-comp">—</b><span>Tushunish (eng yaxshi)</span></div>
+    <div class="stat"><b id="r-streak">0 kun</b><span>Ketma-ket kunlar</span></div>
+    <div class="stat"><b id="r-vision">—</b><span>Ko‘rish maydoni</span></div>
+    <div class="stat"><b id="r-memory">—</b><span>Xotira darajasi</span></div>
+  </div>
+  <button class="btn full" id="rShare" type="button" style="margin-top:16px">Natijani do‘stlarga yuborish</button>
+  <button class="btn ghost full" id="rReset" type="button" style="margin-top:10px">Natijalarni tozalash</button>
+</div></section>
+
+<nav>
+  <button class="on" data-tab="home"><span class="ic">🏠</span>Mashqlar</button>
+  <button data-tab="stats"><span class="ic">📊</span>Natijalar</button>
+</nav>
+
+<script>
+/* ---------- Telegram integratsiya ---------- */
+var tg=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData!==undefined)?Telegram.WebApp:null;
+function hap(t){try{if(!tg)return;if(t==='ok'||t==='err')tg.HapticFeedback.notificationOccurred(t==='ok'?'success':'error');else tg.HapticFeedback.impactOccurred('light')}catch(e){}}
+function applyTheme(){
+  var r=document.documentElement,p=tg&&tg.themeParams||{};
+  var dark=tg?tg.colorScheme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+  r.classList.toggle('dark',dark);
+  if(tg){
+    if(p.secondary_bg_color)r.style.setProperty('--bg',p.secondary_bg_color);
+    if(p.section_bg_color||p.bg_color)r.style.setProperty('--surface',p.section_bg_color||p.bg_color);
+    if(p.text_color)r.style.setProperty('--ink',p.text_color);
+    if(p.hint_color)r.style.setProperty('--muted',p.hint_color);
+    try{tg.setHeaderColor('secondary_bg_color');tg.setBackgroundColor('secondary_bg_color')}catch(e){}
+  }
+}
+if(tg){
+  tg.ready();tg.expand();
+  try{tg.disableVerticalSwipes()}catch(e){}
+  tg.onEvent('themeChanged',applyTheme);
+  var u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
+  if(u&&u.first_name)document.getElementById('hello').textContent='Salom, '+u.first_name+'!';
+}
+applyTheme();
+
+/* ---------- Saqlash: Telegram CloudStorage + localStorage ---------- */
+var FL=(function(){
+  var K='fikrlab_v1',d={};
+  try{d=JSON.parse(localStorage.getItem(K))||{}}catch(e){d={}}
+  var cloud=tg&&tg.CloudStorage&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.9')?tg.CloudStorage:null;
+  if(cloud){cloud.getItem(K,function(err,v){
+    if(err||!v)return;try{var c=JSON.parse(v);
+      ['wpm','comp','vision','memory','streak'].forEach(function(k){if(c[k]!==undefined&&(d[k]===undefined||c[k]>d[k]))d[k]=c[k]});
+      if(c.schulte!==undefined&&(d.schulte===undefined||c.schulte<d.schulte))d.schulte=c.schulte;
+      if(c.last&&(!d.last||c.last>d.last))d.last=c.last;
+      save();render();
+    }catch(e){}
+  })}
+  function save(){var s=JSON.stringify(d);try{localStorage.setItem(K,s)}catch(e){}if(cloud)try{cloud.setItem(K,s)}catch(e){}}
+  function ds(t){var m=t.getMonth()+1,dd=t.getDate();return t.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd}
+  function touch(){var t=ds(new Date());if(d.last===t)return;
+    d.streak=(d.last===ds(new Date(Date.now()-864e5)))?(d.streak||0)+1:1;d.last=t;save();render()}
+  function rec(k,v,low){touch();var o=d[k];if(o===undefined||(low?v<o:v>o)){d[k]=v;hap('ok')}save();render()}
+  function streak(){var now=ds(new Date()),y=ds(new Date(Date.now()-864e5));return(d.last===now||d.last===y)?(d.streak||0):0}
+  function view(){return{schulte:d.schulte!==undefined?d.schulte.toFixed(1)+' s':'—',wpm:d.wpm?d.wpm+' so‘z/daq':'—',comp:d.comp!==undefined?d.comp+'%':'—',streak:streak()+' kun',vision:d.vision?d.vision+'-daraja':'—',memory:d.memory?d.memory+'-daraja':'—'}}
+  function render(){var m=view();for(var k in m){var e=document.getElementById('r-'+k);if(e)e.textContent=m[k]}
+    document.getElementById('hStreak').textContent='🔥 '+streak()+' kun'}
+  function reset(){d={};save();render()}
+  render();
+  return{rec:rec,touch:touch,render:render,reset:reset,view:view};
+})();
+
+/* ---------- Navigatsiya ---------- */
+var cur='home',onLeave=null;
+function show(id){
+  if(onLeave){onLeave();onLeave=null}
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id==='s-'+id)});
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.dataset.tab===id||(id!=='stats'&&b.dataset.tab==='home'))});
+  cur=id;scrollTo(0,0);
+  var inEx=id!=='home'&&id!=='stats';
+  if(tg){try{inEx?tg.BackButton.show():tg.BackButton.hide()}catch(e){}}
+  if(id==='schulte')window.schNew&&schNew();
+}
+if(tg)tg.BackButton.onClick(function(){hap();show('home')});
+document.querySelectorAll('[data-open]').forEach(function(b){b.onclick=function(){hap();show(b.dataset.open)}});
+document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){hap();show(b.dataset.tab)}});
+document.getElementById('rReset').onclick=function(){
+  var go=function(ok){if(ok){FL.reset();hap('ok')}};
+  if(tg&&tg.showConfirm)tg.showConfirm('Barcha natijalar o‘chirilsinmi?',go);else go(confirm('Barcha natijalar o‘chirilsinmi?'));
+};
+document.getElementById('rShare').onclick=function(){
+  var m=FL.view(),t='Fikrlab natijalarim 📖\n⚡ Tezlik: '+m.wpm+'\n🧠 Tushunish: '+m.comp+'\n🔢 Schulte 5×5: '+m.schulte+'\n🔥 '+m.streak+' ketma-ket\n\nSen ham sinab ko‘r!';
+  var url='https://t.me/share/url?url='+encodeURIComponent('https://t.me/'+(window.BOT_USERNAME||''))+'&text='+encodeURIComponent(t);
+  if(tg)tg.openTelegramLink(url);else open(url);
+};
+
+/* ---------- RSVP demo ---------- */
+(function(){
+  var text="Tez o‘qish — bu faqat tezlik emas, balki matnni tushunish va eslab qolish san’atidir. Ko‘zingiz markazdagi harfda tursin, qolganini miyangiz o‘zi to‘ldiradi. Har kuni oz-ozdan mashq qilsangiz, bir oyda o‘qish tezligingiz sezilarli oshadi.".split(" ");
+  var stage=document.getElementById("stage"),go=document.getElementById("go"),wpm=document.getElementById("wpm"),out=document.getElementById("out"),i=0,timer=null;
+  function showW(w){var p=Math.max(0,Math.floor((w.length-1)/3));stage.innerHTML="";var box=document.createElement("div");box.className="word";
+    [["l",w.slice(0,p)],["c",w.charAt(p)],["r",w.slice(p+1)]].forEach(function(x){var s=document.createElement("span");s.className=x[0];s.textContent=x[1];box.appendChild(s)});stage.appendChild(box)}
+  function tick(){if(i>=text.length){stop();FL.touch();return}showW(text[i++]);timer=setTimeout(tick,60000/wpm.value)}
+  function stop(){clearTimeout(timer);timer=null;go.textContent="Qayta"}
+  go.onclick=function(){hap();if(timer){stop();return}if(i>=text.length)i=0;go.textContent="To‘xtatish";tick()};
+  wpm.oninput=function(){out.textContent=wpm.value};
+})();
+
+/* ---------- Schulte + Nuqta ---------- */
+(function(){
+  var box=document.getElementById('sch'),out=document.getElementById('schOut'),next,errs,t0,tm,SN=25;
+  function fmt(){out.textContent=((Date.now()-t0)/1000).toFixed(1)+' s · Xato: '+errs}
+  window.schNew=function(){
+    clearInterval(tm);next=1;errs=0;t0=Date.now();
+    var N=+document.getElementById('schN').value;SN=N*N;box.style.gridTemplateColumns='repeat('+N+',1fr)';
+    var a=[];for(var i=1;i<=SN;i++)a.push(i);
+    for(var j=a.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1)),x=a[j];a[j]=a[k];a[k]=x}
+    box.innerHTML='';
+    a.forEach(function(n){var b=document.createElement('button');b.type='button';b.textContent=n;
+      b.onclick=function(){
+        if(n===next){b.className='done';next++;hap();
+          if(next>SN){clearInterval(tm);fmt();out.textContent+=' · Tayyor!';if(SN===25)FL.rec('schulte',(Date.now()-t0)/1000,true);else{FL.touch();hap('ok')}}}
+        else if(!b.classList.contains('done')){errs++;b.className='bad';hap('err');setTimeout(function(){if(!b.classList.contains('done'))b.className=''},250)}
+      };box.appendChild(b)});
+    tm=setInterval(fmt,100);fmt();
+  };
+  document.getElementById('schGo').onclick=function(){hap();schNew()};
+  document.getElementById('schN').onchange=schNew;
+  schNew();clearInterval(tm);
+
+  var dot=document.getElementById('dot'),dbox=document.getElementById('dotbox'),dgo=document.getElementById('dotGo'),sp=document.getElementById('dotSpeed'),run=false,pos=0,dir=1,last=0;
+  function frame(ts){if(!run||cur!=='dot'){run=false;dgo.textContent='Boshlash';return}
+    var dt=last?ts-last:16;last=ts;var w=dbox.clientWidth-22,h=dbox.clientHeight;
+    pos+=dir*sp.value*0.12*dt;if(pos>=w){pos=w;dir=-1}else if(pos<=0){pos=0;dir=1}
+    dot.style.left=pos+'px';dot.style.top=(h/2-11+Math.sin(pos/40)*(h/2-24))+'px';requestAnimationFrame(frame)}
+  dgo.onclick=function(){hap();run=!run;dgo.textContent=run?'To‘xtatish':'Boshlash';last=0;if(run){FL.touch();requestAnimationFrame(frame)}};
+})();
+
+/* ---------- Ko‘rish, So‘z, Matn, Xotira ---------- */
+(function(){
+  function $(i){return document.getElementById(i)}
+  function rnd(n){return Math.floor(Math.random()*n)}
+  function shuf(a){for(var j=a.length-1;j>0;j--){var k=rnd(j+1),x=a[j];a[j]=a[k];a[k]=x}return a}
+  function opts(box,list,correct,cb){box.innerHTML='';
+    shuf(list.slice()).forEach(function(t){var b=document.createElement('button');b.type='button';b.textContent=t;
+      b.onclick=function(){var all=box.querySelectorAll('button');
+        for(var i=0;i<all.length;i++){all[i].disabled=true;if(all[i].textContent===correct)all[i].className='ok'}
+        if(t!==correct){b.className='no';hap('err')}else hap('ok');cb(t===correct)};box.appendChild(b)})}
+
+  var vl=1,vS='',vf=$('vFlash'),vi=$('vIn'),vo=$('vOut');
+  function vGo(){var n=2+vl*2;vS='';for(var i=0;i<n;i++)vS+=rnd(10);
+    vf.textContent=vS;vi.value='';vo.textContent='Daraja '+vl+' · '+n+' raqam';
+    setTimeout(function(){vf.textContent='?';vi.focus()},350+n*30)}
+  $('vChk').onclick=function(){
+    if(!vS){vGo();$('vChk').textContent='Tekshirish';return}
+    if(vi.value.replace(/\s/g,'')===vS){FL.rec('vision',vl);hap('ok');vl++;vo.textContent='To‘g‘ri! Keyingi daraja.'}
+    else{hap('err');vl=Math.max(1,vl-1);vo.textContent='Xato. To‘g‘ri javob: '+vS}
+    vS='';vi.blur();$('vChk').textContent='Keyingisi'};
+
+  var W=['kitob','maktab','daraxt','quyosh','daftar','shamol','bulut','tarozi','olma','qalam','daryo','mehnat','bahor','yulduz','oyna','gilam','sabzi','tog‘','dengiz','ustoz'],ws=0,wt=0;
+  $('wGo').onclick=function(){hap();var w=W[rnd(W.length)],d=shuf(W.filter(function(x){return x!==w})).slice(0,2);
+    $('wFlash').textContent=w;$('wOpts').innerHTML='';$('wGo').textContent='Keyingisi';
+    setTimeout(function(){$('wFlash').textContent='?';
+      opts($('wOpts'),[w,d[0],d[1]],w,function(ok){wt++;if(ok)ws++;FL.touch();$('wOut').textContent='To‘g‘ri: '+ws+' / '+wt})},300)};
+
+  var P='Tez o‘qish — bu so‘zlarni emas, g‘oyalarni ilg‘ash demakdir. Malakali o‘quvchi ko‘zini qatorda kam to‘xtatadi va bir qarashda bir necha so‘zni qamrab oladi. Ichida talaffuz qilish tezlikni sekinlashtiradi, shuning uchun uni kamaytirish kerak. Muntazam mashq qilgan kishi bir necha haftada o‘qish tezligini sezilarli oshiradi, biroq tushunishni yo‘qotmaslik muhim.';
+  var Q=[['Tezlikni nima sekinlashtiradi?','Ichida talaffuz qilish',['Ko‘p mashq qilish','Ko‘zni qatorda yuritish']],['Malakali o‘quvchi bir qarashda nimani qamrab oladi?','Bir necha so‘zni',['Bitta harfni','Butun sahifani']]];
+  var tt=0,tw=0,qi=0,qs=0,st=0,tb=$('tGo'),tbx=$('tBox');
+  function ask(){
+    if(qi>=Q.length){var c=Math.round(qs/Q.length*100);FL.rec('wpm',tw);FL.rec('comp',c);tbx.textContent='Tushunish: '+c+'% · Tezlik: '+tw+' so‘z/daq';$('tOpts').innerHTML='';tb.textContent='Qayta boshlash';st=0;return}
+    var q=Q[qi];tbx.textContent=q[0];opts($('tOpts'),[q[1]].concat(q[2]),q[1],function(ok){if(ok)qs++;qi++;setTimeout(ask,700)})}
+  tb.onclick=function(){hap();
+    if(st===1){tw=Math.round(P.split(' ').length/((Date.now()-tt)/60000));st=2;qi=0;qs=0;tb.textContent='...';ask();return}
+    if(st===2)return;
+    st=1;tbx.textContent=P;$('tOpts').innerHTML='';tb.textContent='Tugatdim';tt=Date.now()};
+
+  var ml=1,mem=$('mem');
+  function mBuild(){mem.innerHTML='';for(var i=0;i<16;i++){var b=document.createElement('button');b.type='button';b.disabled=true;mem.appendChild(b)}}
+  $('mGo').onclick=function(){hap();mBuild();var bs=mem.children,k=2+ml,pick=0;
+    var T=shuf([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]).slice(0,k);
+    T.forEach(function(i){bs[i].className='on'});
+    $('mOut').textContent='Daraja '+ml+' · eslab qoling…';$('mGo').textContent='Keyingisi';
+    setTimeout(function(){T.forEach(function(i){bs[i].className=''});
+      $('mOut').textContent='Daraja '+ml+' · yongan katakchalarni bosing';
+      for(var i=0;i<16;i++){(function(i){bs[i].disabled=false;bs[i].onclick=function(){bs[i].disabled=true;
+        if(T.indexOf(i)>-1){bs[i].className='ok';pick++;hap();if(pick===k){FL.rec('memory',ml);hap('ok');ml++;$('mOut').textContent='Barchasi to‘g‘ri! Daraja '+ml}}
+        else{bs[i].className='no';hap('err');ml=Math.max(1,ml-1);$('mOut').textContent='Xato. Daraja '+ml;
+          T.forEach(function(j){bs[j].className='on'});for(var x=0;x<16;x++)bs[x].disabled=true}}})(i)}
+    },1100+ml*150)};
+  mBuild();
+})();
+</script>
+</body>
+</html>
