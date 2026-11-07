@@ -388,7 +388,7 @@ const Store = {
     this.mode = "api";
     try {
       const me = await api("GET", "/api/me");
-      this.uid = me.id; this.isTeacher = !!me.isTeacher; this.sample = me.quiz ? { api: true } : null;
+      this.uid = me.id; this.isTeacher = !!me.isTeacher; this.sample = { api: true, ai: !!me.quiz };
       await this.refresh();
       this.profileReady = true; scheduleProfile(2000);
       if (this.isTeacher) this.loadStudents();
@@ -463,7 +463,7 @@ const Store = {
       const d = q.pending; q.pending = null;
       if (this.mode === "api") {
         try {
-          const r = await api("PUT", "/api/" + path, { data: d });
+          const r = await api("PUT", "/api/" + path, { data: d, clientNow: Date.now() });
           if (r && r.data && path.startsWith("sessions/")) { const id = path.slice(9); this.sessions.set(id, Object.assign({ id }, r.data)); changed(); }
         } catch (e) {
           if (e.code === "network" || /^http_5/.test(e.code)) { await sleep(1500 + Math.random() * 1500); if (!q.pending) q.pending = d; await sleep(3000); }
@@ -653,7 +653,33 @@ function openSheet(children) { const s = $("#sheet"); s.replaceChildren(...child
 function closeSheet() { $("#layer").hidden = true; $("#sheet").replaceChildren(); }
 
 /* ============ Claude quiz ============ */
-async function makeQuestions(text, n, images) {
+function sentencesOf(t) {
+  return ((t || "").replace(/\s+/g, " ").match(/[^.!?…]+[.!?…]+/g) || []).map(x => x.trim()).filter(x => { const k = wordsOf(x).length; return k >= 6 && k <= 30; });
+}
+/* AI’siz test: o‘qilgan qismdagi jumlani o‘qilmagan qism jumlalaridan ajratish */
+function localQuestions(text, other, n) {
+  const rs = Array.from(new Set(sentencesOf(text)));
+  // chalg‘ituvchi jumlalar imkon qadar o‘sha matnning o‘qilmagan qismidan olinadi (mavzusi bir xil bo‘lsin)
+  const osAll = sentencesOf(other);
+  if (other && !/^\s*[\p{Lu}"«“]/u.test(other)) osAll.shift(); // kesilgan birinchi jumlani tashlaymiz
+  const own = shuffle(Array.from(new Set(osAll)).filter(x => !text.includes(x)));
+  let k = Math.min(n, rs.length, Math.floor(own.length / 3));
+  let pool = own;
+  if (k < 2) { pool = own.concat(shuffle(PASSAGES.flatMap(p => sentencesOf(p.text))).filter(x => !text.includes(x) && !own.includes(x))); k = Math.min(n, rs.length, Math.floor(pool.length / 3)); }
+  if (rs.length < 2 || k < 2) throw { code: "short" };
+  const picks = [];
+  for (let i = 0; i < k; i++) picks.push(rs[Math.floor((i + 0.5) * rs.length / k)]);
+  pool = pool.slice(); const clip = x => x.length > 170 ? x.slice(0, 167) + "…" : x;
+  return picks.map(x => ({ q: "Qaysi jumla siz hozir o‘qigan qismda bor edi?", options: shuffle([{ t: clip(x), ok: true }].concat(pool.splice(0, 3).map(d => ({ t: clip(d), ok: false })))) })).filter(q => q.options.length === 4);
+}
+async function makeQuestions(text, n, images, other) {
+  if (Store.mode === "api" && !(Store.sample && Store.sample.ai)) {
+    if (!text || wordsOf(text).length < 30) throw { code: "no_text" };
+    const qs = localQuestions(text, other, n);
+    const r = await api("POST", "/api/quiz/local", { answers: qs.map(q => q.options.findIndex(o => o.ok)) });
+    const out = qs.map(q => ({ q: q.q, options: q.options.map(o => ({ t: o.t })) }));
+    out.quizId = r.quizId; return out;
+  }
   const prompt =
 `Sen tez o‘qish kursi uchun tushunish testini tuzasan. Quyida o‘quvchi hozirgina o‘qigan matn (yoki sahifa rasmlari) berilgan.
 Faqat shu matnda aniq aytilgan narsalar bo‘yicha ${n} ta savol tuz.
@@ -693,11 +719,13 @@ function quizErrText(e) {
   if (c === "rate_limited") return "Claude hozir band yoki limit tugadi. Birozdan keyin qayta urinib ko‘ring.";
   if (c === "bad_questions" || c === "invalid_json") return "Savollar to‘g‘ri tuzilmadi.";
   if (c === "no_key") return "Testlar hali yoqilmagan — ustozga ayting.";
+  if (c === "no_text") return "Bu betlarda matn yo‘q (skanerlangan) — test tuzib bo‘lmadi.";
+  if (c === "short") return "Matn test uchun juda qisqa.";
   if (c === "network") return "Internetga ulanib bo‘lmadi.";
   return "Savollarni tayyorlab bo‘lmadi (" + (c || "xato") + ").";
 }
 /* Runs a quiz inside container. Resolves {n, correct} or {skipped:true, reason} */
-function runQuiz(container, { text, images, n, title, allowSkip = true }) {
+function runQuiz(container, { text, images, n, title, allowSkip = true, other = "" }) {
   return new Promise(resolve => {
     let qs = null, i = 0, correct = 0;
     const done = r => resolve(r);
@@ -718,7 +746,7 @@ function runQuiz(container, { text, images, n, title, allowSkip = true }) {
     async function start() {
       if (!Store.sample) { done({ skipped: true, reason: "no_sample" }); return; }
       loading();
-      try { qs = await makeQuestions(text, n, images); i = 0; correct = 0; show(); }
+      try { qs = await makeQuestions(text, n, images, other); i = 0; correct = 0; show(); }
       catch (e) { err(e); }
     }
     function show() {
@@ -1059,7 +1087,15 @@ async function endReading() {
       for (const p of pick.slice(0, 2)) { try { const cv = await renderPageCanvas(R.pdf, p, 900); images.push(await new Promise(r => cv.toBlob(r, "image/jpeg", 0.85))); } catch (e) {} }
       text = "";
     }
-    const q = await runQuiz(sheet, { text, images, n: 3, title: "Tasdiqlash testi" });
+    let other = "";
+    if (text) {
+      const maxP = Math.max(...pages), minP = Math.min(...pages), done = new Set(pages);
+      const cand = [];
+      for (let p = maxP + 3; p <= R.pdf.numPages && cand.length < 3; p++) if (!done.has(p)) cand.push(p);
+      for (let p = minP - 3; p >= 1 && cand.length < 3; p--) if (!done.has(p)) cand.push(p);
+      for (const p of cand) { try { const t = await pageText(R.book.id, R.pdf, p); other += t.paras.join("\n") + "\n"; } catch (e) {} }
+    }
+    const q = await runQuiz(sheet, { text, images, n: 3, title: "Tasdiqlash testi", other });
     if (q.skipped) { fin(q); return; }
     const ok = q.correct >= 2;
     sheet.replaceChildren(
@@ -1567,7 +1603,8 @@ function runTest(cfg) {
     const box = h("section", { class: "card" });
     v.replaceChildren(box);
     if (Store.sample && n >= 25) {
-      const q = await runQuiz(box, { text: readText, n: n >= 120 ? 5 : 3, title: "Tushunish savollari", allowSkip: true });
+      const restText = cfg.words.map(p => p.join(" ")).join("\n").split(/\s+/).slice(n + 15).join(" ");
+      const q = await runQuiz(box, { text: readText, n: n >= 120 ? 5 : 3, title: "Tushunish savollari", allowSkip: true, other: restText });
       rec.quiz = Object.assign({ at: Date.now() }, q);
       if (!q.skipped) { rec.comprehension = q.correct / q.n; rec.effective = Math.round(wpm * rec.comprehension); }
     } else rec.quiz = { skipped: true, reason: Store.sample ? "short" : "no_sample" };
@@ -1802,7 +1839,8 @@ async function startSakkad(src) {
     const rec = { kind: "sakkad", start: startAt, end: Date.now(), day: dayKey(startAt), source: t.source, sourceTitle: t.title, fixMs: fix, wpm: wpmOf(fix), words: flat.length, chunks: chunks.length, quiz: null };
     const qbox = h("section", { class: "card" });
     v.replaceChildren(qbox); window.scrollTo(0, 0);
-    if (Store.sample) { const q = await runQuiz(qbox, { text, n: 3, title: "Tushundingizmi?" }); rec.quiz = Object.assign({ at: Date.now() }, q); }
+    const restText = t.words.map(p => p.join(" ")).join("\n").split(/\s+/).slice(flat.length + 15).join(" ");
+    if (Store.sample) { const q = await runQuiz(qbox, { text, n: 3, title: "Tushundingizmi?", other: restText }); rec.quiz = Object.assign({ at: Date.now() }, q); }
     else rec.quiz = { skipped: true, reason: "no_sample" };
     Store.write("sessions", newId(), rec);
     const ok = isVerified(rec);

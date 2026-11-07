@@ -13,6 +13,15 @@ const TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const AI_KEY = process.env.ANTHROPIC_API_KEY || "";
 const MODEL = process.env.QUIZ_MODEL || "claude-haiku-5-5";
 const PUBLIC_URL = (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || "").replace(/\/$/, "");
+const BOT_INFO_URL = process.env.BOT_INFO_URL || "https://fikrlab.onrender.com/bot.json";
+let BOT_ID = process.env.BOT_ID || (TOKEN ? TOKEN.split(":")[0] : "");
+const TG_PUBKEY = crypto.createPublicKey({ key: Buffer.concat([Buffer.from("302a300506032b6570032100", "hex"), Buffer.from(process.env.TG_PUBKEY_HEX || "e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d", "hex")]), format: "der", type: "spki" });
+async function loadBotId() {
+  if (BOT_ID) return;
+  try { const r = await fetch(BOT_INFO_URL, { cache: "no-store" }); const j = await r.json(); if (j && /^\d+$/.test(String(j.id))) { BOT_ID = String(j.id); console.log("Bot ID topildi:", BOT_ID, j.username ? "@" + j.username : ""); return; } } catch (e) {}
+  console.log("Bot ID hali yo‘q, 60 soniyadan keyin qayta urinaman");
+  setTimeout(loadBotId, 60000);
+}
 const TEACHER_IDS = (process.env.TEACHER_IDS || "").split(",").map(s => s.trim()).filter(Boolean);
 const QUIZ_PER_DAY = 60;
 
@@ -33,14 +42,23 @@ async function migrate() {
 
 /* ---------- Telegram initData tekshiruvi ---------- */
 function verifyInitData(initData) {
-  if (!TOKEN || !initData) return null;
+  if (!initData) return null;
   const p = new URLSearchParams(initData);
-  const hash = p.get("hash"); if (!hash) return null;
-  p.delete("hash");
-  const dcs = [...p.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, v]) => k + "=" + v).join("\n");
-  const secret = crypto.createHmac("sha256", "WebAppData").update(TOKEN).digest();
-  const calc = crypto.createHmac("sha256", secret).update(dcs).digest("hex");
-  if (calc.length !== hash.length || !crypto.timingSafeEqual(Buffer.from(calc), Buffer.from(hash))) return null;
+  const hash = p.get("hash"), sig = p.get("signature");
+  if (TOKEN && hash) {
+    p.delete("hash");
+    const dcs = [...p.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, v]) => k + "=" + v).join("\n");
+    const secret = crypto.createHmac("sha256", "WebAppData").update(TOKEN).digest();
+    const calc = crypto.createHmac("sha256", secret).update(dcs).digest("hex");
+    if (calc.length !== hash.length || !crypto.timingSafeEqual(Buffer.from(calc), Buffer.from(hash))) return null;
+  } else if (BOT_ID && sig) {
+    // Tokensiz tekshiruv: Telegram'ning Ed25519 imzosi (third-party validation)
+    p.delete("hash"); p.delete("signature");
+    const dcs = BOT_ID + ":WebAppData\n" + [...p.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, v]) => k + "=" + v).join("\n");
+    let ok = false;
+    try { ok = crypto.verify(null, Buffer.from(dcs), TG_PUBKEY, Buffer.from(sig, "base64url")); } catch (e) { ok = false; }
+    if (!ok) return null;
+  } else return null;
   const auth = Number(p.get("auth_date") || 0);
   if (!auth || Date.now() / 1000 - auth > 7 * 86400) return null;
   try { return JSON.parse(p.get("user") || "null"); } catch { return null; }
@@ -97,11 +115,14 @@ async function applyQuiz(userId, sessionId, data) {
   if (data.kind === "test" && typeof data.wpm === "number") { data.comprehension = correct / answers.length; data.effective = Math.round(data.wpm * data.comprehension); }
   if (!rows[0].used_by) await q(`UPDATE quizzes SET used_by = $2 WHERE id = $1`, [quiz.quizId, sessionId]);
 }
-async function putSession(userId, id, data, res) {
+async function putSession(userId, id, data, res, clientNow) {
   if (!data || typeof data !== "object" || !KINDS.has(data.kind)) return err(res, 400, "bad_kind", "Noma’lum yozuv turi.");
   const now = Date.now();
-  const start = Number(data.start);
-  if (!(start > now - 26 * 3600e3 && start < now + 120e3)) return err(res, 422, "bad_time", "Yozuv vaqti noto‘g‘ri.");
+  // telefon soati noto‘g‘ri bo‘lishi mumkin: farqni hisobga olamiz
+  let offset = Number(clientNow) ? now - Number(clientNow) : 0;
+  if (!(Math.abs(offset) < 2 * 86400e3)) offset = 0;
+  const start = Number(data.start), adjStart = start + offset;
+  if (!(adjStart > now - 26 * 3600e3 && adjStart < now + 120e3)) return err(res, 422, "bad_time", "Yozuv vaqti noto‘g‘ri.");
   const prev = await q(`SELECT data FROM sessions WHERE user_id = $1 AND id = $2`, [userId, id]);
   if (prev.length) {
     const p = parse(prev[0].data);
@@ -110,7 +131,7 @@ async function putSession(userId, id, data, res) {
     if ((data.activeSec || 0) < (p.activeSec || 0)) return err(res, 422, "time_back", "Faol vaqt kamaya olmaydi.");
   }
   if (data.kind === "read") {
-    const maxSec = Math.ceil((now - start) / 1000) + 15;
+    const maxSec = Math.ceil((now - adjStart) / 1000) + 15;
     if ((data.activeSec || 0) > maxSec) return err(res, 422, "time_over", "Faol vaqt o‘tgan vaqtdan ko‘p bo‘lishi mumkin emas.");
   }
   if (typeof data.day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.day)) data.day = new Date(start + 5 * 3600e3).toISOString().slice(0, 10);
@@ -194,7 +215,7 @@ async function answerQuiz(userId, id, body, res) {
 /* ---------- API marshrutlari ---------- */
 async function api(req, res, url) {
   const user = verifyInitData(req.headers["x-init-data"]);
-  if (!user || !user.id) return err(res, 401, "auth", TOKEN ? "Ilovani Telegram ichidan oching." : "Server sozlanmagan: TELEGRAM_BOT_TOKEN yo‘q.");
+  if (!user || !user.id) return err(res, 401, "auth", TOKEN || BOT_ID ? "Ilovani Telegram ichidan oching." : "Server hali bot bilan bog‘lanmadi. Bir daqiqadan keyin qayta oching.");
   const me = await upsertUser(user);
   const uid = me.id;
   const parts = url.pathname.split("/").filter(Boolean).slice(1); // after "api"
@@ -216,12 +237,19 @@ async function api(req, res, url) {
     await q(`INSERT INTO books (user_id, id, data) VALUES ($1,$2,$3) ON CONFLICT (user_id, id) DO UPDATE SET data = EXCLUDED.data`, [uid, parts[1], json(d)]);
     return send(res, 200, { ok: true });
   }
-  if (m === "PUT" && parts[0] === "sessions" && idOk(parts[1])) return putSession(uid, parts[1], body && body.data, res);
+  if (m === "PUT" && parts[0] === "sessions" && idOk(parts[1])) return putSession(uid, parts[1], body && body.data, res, body && body.clientNow);
   if (m === "PUT" && parts[0] === "profile") {
     const d = body && body.data; await q(`UPDATE users SET sum = $2, last_seen = $3 WHERE id = $1`, [uid, json(d && d.sum || null), Date.now()]);
     return send(res, 200, { ok: true });
   }
   if (m === "POST" && parts[0] === "quiz" && !parts[1]) return makeQuiz(uid, body || {}, res);
+  if (m === "POST" && parts[0] === "quiz" && parts[1] === "local") {
+    const a = body && body.answers;
+    if (!Array.isArray(a) || a.length < 2 || a.length > 5 || !a.every(x => Number.isInteger(x) && x >= 0 && x < 6)) return err(res, 400, "bad", "Noto‘g‘ri test.");
+    const id = "l" + crypto.randomBytes(9).toString("hex");
+    await q(`INSERT INTO quizzes (id, user_id, answers, picks, created_at) VALUES ($1,$2,$3,$4,$5)`, [id, uid, json(a), json({}), Date.now()]);
+    return send(res, 200, { quizId: id });
+  }
   if (m === "POST" && parts[0] === "quiz" && idOk(parts[1]) && parts[2] === "answer") return answerQuiz(uid, parts[1], body || {}, res);
   // ustoz
   if (parts[0] === "students" || parts[0] === "homework") {
@@ -251,7 +279,7 @@ async function tg(method, payload) {
   return r.json().catch(() => ({}));
 }
 async function setupBot() {
-  if (!TOKEN || !PUBLIC_URL) { console.log("Bot sozlanmadi: TELEGRAM_BOT_TOKEN yoki URL yo‘q"); return; }
+  if (!TOKEN || !PUBLIC_URL) { console.log("Token serverda yo‘q — bot menyusini eski sayt sozlaydi, kirish Ed25519 imzo bilan tekshiriladi."); return; }
   try {
     console.log("menu", JSON.stringify(await tg("setChatMenuButton", { menu_button: { type: "web_app", text: "Fikrlab", web_app: { url: PUBLIC_URL } } })));
     console.log("webhook", JSON.stringify(await tg("setWebhook", { url: PUBLIC_URL + HOOK, allowed_updates: ["message"] })));
@@ -296,5 +324,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 migrate().then(() => {
-  server.listen(PORT, () => { console.log("Fikrlab server :" + PORT); setupBot(); });
+  server.listen(PORT, () => { console.log("Fikrlab server :" + PORT); setupBot(); loadBotId(); });
 }).catch(e => { console.error("DB migratsiya xatosi", e); process.exit(1); });
