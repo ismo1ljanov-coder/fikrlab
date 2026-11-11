@@ -19,4 +19,13 @@ curl -s -X POST "$API/setMyDescription" -H 'Content-Type: application/json' \
   -d '{"description":"Fikrlab — tez o‘qish mashq xonasi: PDF kitob o‘qish, diagnostika, Shulte, sakkad va boshqa mashqlar. Natijalar halol hisoblanadi. Pastdagi «Fikrlab» tugmasini bosing."}'; echo
 curl -s -X POST "$API/setMyShortDescription" -H 'Content-Type: application/json' \
   -d '{"short_description":"Tez o‘qish mashq xonasi 📖"}'; echo
+# 3) Tokenni yangi serverga topshiramiz: server uni getMe bilan tekshiradi, bazaga saqlaydi,
+#    so'ng webhook (/start javobi) va kirish tekshiruvini o'zi sozlaydi.
+for i in 1 2 3; do
+  R=$(curl -s --max-time 100 -X POST "$APP/admin/bot-token" -H 'Content-Type: application/json' \
+      -d "{\"token\":\"${TELEGRAM_BOT_TOKEN}\"}")
+  echo "server: $R"
+  case "$R" in *'"ok":true'*) break;; esac
+  sleep 10
+done
 exit 0

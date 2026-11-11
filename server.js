@@ -9,7 +9,7 @@ import pg from "pg";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
+let TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const AI_KEY = process.env.ANTHROPIC_API_KEY || "";
 const MODEL = process.env.QUIZ_MODEL || "claude-haiku-5-5";
 const PUBLIC_URL = (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || "").replace(/\/$/, "");
@@ -35,9 +35,12 @@ async function migrate() {
     `CREATE TABLE IF NOT EXISTS sessions (user_id BIGINT NOT NULL, id TEXT NOT NULL, start_ts BIGINT NOT NULL, data JSONB NOT NULL, received_at BIGINT NOT NULL, PRIMARY KEY (user_id, id))`,
     `CREATE INDEX IF NOT EXISTS sessions_user_start ON sessions (user_id, start_ts DESC)`,
     `CREATE TABLE IF NOT EXISTS homework (id TEXT PRIMARY KEY, data JSONB NOT NULL, created_by BIGINT)`,
-    `CREATE TABLE IF NOT EXISTS quizzes (id TEXT PRIMARY KEY, user_id BIGINT NOT NULL, answers JSONB NOT NULL, picks JSONB NOT NULL, used_by TEXT, created_at BIGINT NOT NULL)`
+    `CREATE TABLE IF NOT EXISTS quizzes (id TEXT PRIMARY KEY, user_id BIGINT NOT NULL, answers JSONB NOT NULL, picks JSONB NOT NULL, used_by TEXT, created_at BIGINT NOT NULL)`,
+    `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`
   ];
   for (const s of stmts) await q(s);
+  if (!TOKEN) { const r = await q(`SELECT value FROM settings WHERE key = 'bot_token'`); if (r.length) { TOKEN = r[0].value; console.log("Bot tokeni bazadan olindi"); } }
+  if (TOKEN && !BOT_ID) BOT_ID = TOKEN.split(":")[0];
 }
 
 /* ---------- Telegram initData tekshiruvi ---------- */
@@ -273,7 +276,21 @@ async function api(req, res, url) {
 }
 
 /* ---------- Telegram bot (webhook) ---------- */
-const HOOK = "/tg/" + crypto.createHash("sha256").update(TOKEN || "x").digest("hex").slice(0, 24);
+const hookPath = () => "/tg/" + crypto.createHash("sha256").update(TOKEN || "x").digest("hex").slice(0, 24);
+// Eski sayt build’i tokenni shu yerga yuboradi. Faqat shu botning haqiqiy tokeni qabul qilinadi (getMe bilan tekshiriladi).
+async function registerToken(body, res) {
+  const t = body && typeof body.token === "string" ? body.token.trim() : "";
+  if (!/^\d+:[A-Za-z0-9_-]{30,}$/.test(t)) return err(res, 400, "bad", "Token formati noto‘g‘ri.");
+  if (BOT_ID && t.split(":")[0] !== String(BOT_ID)) return err(res, 403, "other_bot", "Bu boshqa botning tokeni.");
+  let me;
+  try { me = await (await fetch(`https://api.telegram.org/bot${t}/getMe`)).json(); } catch (e) { return err(res, 502, "tg", "Telegram’ga ulanib bo‘lmadi."); }
+  if (!me || !me.ok) return err(res, 403, "invalid", "Token yaroqsiz.");
+  await q(`INSERT INTO settings (key, value) VALUES ('bot_token', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`, [t]);
+  const changed = t !== TOKEN; TOKEN = t; BOT_ID = String(me.result.id);
+  if (changed) console.log("Bot tokeni ro‘yxatdan o‘tdi: @" + me.result.username);
+  await setupBot();
+  send(res, 200, { ok: true, bot: me.result.username });
+}
 async function tg(method, payload) {
   const r = await fetch(`https://api.telegram.org/bot${TOKEN}/${method}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
   return r.json().catch(() => ({}));
@@ -282,7 +299,8 @@ async function setupBot() {
   if (!TOKEN || !PUBLIC_URL) { console.log("Token serverda yo‘q — bot menyusini eski sayt sozlaydi, kirish Ed25519 imzo bilan tekshiriladi."); return; }
   try {
     console.log("menu", JSON.stringify(await tg("setChatMenuButton", { menu_button: { type: "web_app", text: "Fikrlab", web_app: { url: PUBLIC_URL } } })));
-    console.log("webhook", JSON.stringify(await tg("setWebhook", { url: PUBLIC_URL + HOOK, allowed_updates: ["message"] })));
+    console.log("webhook", JSON.stringify(await tg("setWebhook", { url: PUBLIC_URL + hookPath(), allowed_updates: ["message"], drop_pending_updates: false })));
+    await tg("setMyCommands", { commands: [{ command: "start", description: "Fikrlab’ni ochish" }, { command: "id", description: "Telegram ID’ni ko‘rish" }] });
     await tg("setMyDescription", { description: "Fikrlab — tez o‘qish mashq xonasi: PDF kitob o‘qish, diagnostika, Shulte, sakkad va boshqa mashqlar. Natijalar halol hisoblanadi." });
     await tg("setMyShortDescription", { short_description: "Tez o‘qish mashq xonasi 📖" });
   } catch (e) { console.error("bot setup", e.message); }
@@ -310,7 +328,8 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   try {
     if (url.pathname.startsWith("/api/")) return await api(req, res, url);
-    if (req.method === "POST" && url.pathname === HOOK) { const b = await readBody(req, 1e6); send(res, 200, { ok: true }); onUpdate(b).catch(e => console.error("update", e.message)); return; }
+    if (req.method === "POST" && url.pathname === "/admin/bot-token") return await registerToken(await readBody(req, 1e4), res);
+    if (req.method === "POST" && TOKEN && url.pathname === hookPath()) { const b = await readBody(req, 1e6); send(res, 200, { ok: true }); onUpdate(b).catch(e => console.error("update", e.message)); return; }
     if (url.pathname === "/health") return send(res, 200, { ok: true });
     if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
