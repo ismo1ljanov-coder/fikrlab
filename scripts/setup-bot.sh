@@ -3,7 +3,7 @@
 # 1) public/bot.json ga bot ID va username yoziladi (ochiq ma'lumot, server Ed25519 tekshiruvi uchun oladi)
 # 2) Bot menyu tugmasi yangi ilovaga ulanadi: fikrlab-app
 set -u
-APP="https://fikrlab-app.onrender.com"
+APP="https://fikrlab-app.vercel.app"
 if [ -z "${TELEGRAM_BOT_TOKEN:-}" ]; then echo "TELEGRAM_BOT_TOKEN yo'q — o'tkazib yuborildi"; exit 0; fi
 API="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}"
 ME=$(curl -s "$API/getMe")
