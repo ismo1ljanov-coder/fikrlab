@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 let TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
 const AI_KEY = process.env.ANTHROPIC_API_KEY || "";
 const MODEL = process.env.QUIZ_MODEL || "claude-haiku-5-5";
-const PUBLIC_URL = (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || "").replace(/\/$/, "");
+const PUBLIC_URL = (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? "https://" + process.env.VERCEL_PROJECT_PRODUCTION_URL : "")).replace(/\/$/, "");
 const BOT_INFO_URL = process.env.BOT_INFO_URL || "https://fikrlab.onrender.com/bot.json";
 let BOT_ID = process.env.BOT_ID || (TOKEN ? TOKEN.split(":")[0] : "");
 const TG_PUBKEY = crypto.createPublicKey({ key: Buffer.concat([Buffer.from("302a300506032b6570032100", "hex"), Buffer.from(process.env.TG_PUBKEY_HEX || "e7bf03a2fa4602af4580703d88dda5bb59f32ed8b02a56c187fe7d34caed242d", "hex")]), format: "der", type: "spki" });
@@ -41,6 +41,12 @@ async function migrate() {
   for (const s of stmts) await q(s);
   if (!TOKEN) { const r = await q(`SELECT value FROM settings WHERE key = 'bot_token'`); if (r.length) { TOKEN = r[0].value; console.log("Bot tokeni bazadan olindi"); } }
   if (TOKEN && !BOT_ID) BOT_ID = TOKEN.split(":")[0];
+  // Server manzili o‘zgargan bo‘lsa (masalan, boshqa hostingga ko‘chganda), bot menyusi va webhook’ni yangilaymiz
+  if (TOKEN && PUBLIC_URL) {
+    const want = PUBLIC_URL + hookPath();
+    const r = await q(`SELECT value FROM settings WHERE key = 'hook_url'`);
+    if (!r.length || r[0].value !== want) { await setupBot(); await q(`INSERT INTO settings (key, value) VALUES ('hook_url', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`, [want]); }
+  }
 }
 
 /* ---------- Telegram initData tekshiruvi ---------- */
@@ -324,12 +330,15 @@ function indexHtml() {
   INDEX = h; return h;
 }
 
-const server = http.createServer(async (req, res) => {
+let READY = null;
+const ready = () => (READY = READY || migrate().catch(e => { READY = null; throw e; }));
+export async function handler(req, res) {
   const url = new URL(req.url, "http://x");
   try {
+    await ready();
     if (url.pathname.startsWith("/api/")) return await api(req, res, url);
     if (req.method === "POST" && url.pathname === "/admin/bot-token") return await registerToken(await readBody(req, 1e4), res);
-    if (req.method === "POST" && TOKEN && url.pathname === hookPath()) { const b = await readBody(req, 1e6); send(res, 200, { ok: true }); onUpdate(b).catch(e => console.error("update", e.message)); return; }
+    if (req.method === "POST" && TOKEN && url.pathname === hookPath()) { const b = await readBody(req, 1e6); await onUpdate(b).catch(e => console.error("update", e.message)); return send(res, 200, { ok: true }); }
     if (url.pathname === "/health") return send(res, 200, { ok: true });
     if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html")) {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
@@ -340,8 +349,10 @@ const server = http.createServer(async (req, res) => {
     console.error(req.method, url.pathname, e);
     if (!res.headersSent) err(res, e.status || 500, e.message === "too_large" ? "too_large" : "server", "Server xatosi. Birozdan keyin urinib ko‘ring.");
   }
-});
+}
 
-migrate().then(() => {
-  server.listen(PORT, () => { console.log("Fikrlab server :" + PORT); setupBot(); loadBotId(); });
-}).catch(e => { console.error("DB migratsiya xatosi", e); process.exit(1); });
+if (!process.env.VERCEL) {
+  ready().then(() => {
+    http.createServer(handler).listen(PORT, () => { console.log("Fikrlab server :" + PORT); loadBotId(); });
+  }).catch(e => { console.error("DB migratsiya xatosi", e); process.exit(1); });
+} else loadBotId();

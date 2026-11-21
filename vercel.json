@@ -1,0 +1,6 @@
+{
+  "buildCommand": "mkdir -p vercel-out && echo ok > vercel-out/.keep",
+  "outputDirectory": "vercel-out",
+  "functions": { "api/index.js": { "includeFiles": "web/**", "maxDuration": 30 } },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/index" }]
+}
