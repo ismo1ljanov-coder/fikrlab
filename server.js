@@ -323,9 +323,11 @@ async function onUpdate(u) {
 
 /* ---------- statik fayl ---------- */
 let INDEX = null;
+let HTML_MOD = null;
+try { HTML_MOD = (await import("./web/index-html.mjs")).default; } catch (e) {}
 function indexHtml() {
   if (INDEX && process.env.NODE_ENV === "production") return INDEX;
-  let h = fs.readFileSync(path.join(DIR, "web", "index.html"), "utf8");
+  let h = HTML_MOD || fs.readFileSync(path.join(DIR, "web", "index.html"), "utf8");
   h = h.replace("<title>", '<script src="https://telegram.org/js/telegram-web-app.js"></script><title>');
   INDEX = h; return h;
 }
