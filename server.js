@@ -356,3 +356,5 @@ if (!process.env.VERCEL) {
     http.createServer(handler).listen(PORT, () => { console.log("Fikrlab server :" + PORT); loadBotId(); });
   }).catch(e => { console.error("DB migratsiya xatosi", e); process.exit(1); });
 } else loadBotId();
+
+export default handler;
